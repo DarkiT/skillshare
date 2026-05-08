@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.19.8] - 2026-05-08
+
+### New Features
+
+- **Shell completion** — new `skillshare completion` command generates tab-completion scripts for bash, zsh, fish, PowerShell, and Nushell. Supports `--install` to auto-write the script to the correct platform path. Refs: #148
+  ```bash
+  skillshare completion bash --install    # one-line setup
+  skillshare completion zsh --install
+  skillshare completion fish --install
+  skillshare completion powershell --install
+  skillshare completion nushell --install
+  ```
+  Covers all commands, subcommands, and per-command flags. Bash, zsh, and PowerShell scripts auto-detect aliases (e.g. `alias ss=skillshare`) and register completions for them
+
 ## [0.19.7] - 2026-05-05
 
 ### New Features
