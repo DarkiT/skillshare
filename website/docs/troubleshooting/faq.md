@@ -38,6 +38,8 @@ Then create skills directly in `~/.claude/skills/` — they won't be touched.
 
 No. Skillshare detects external symlinks on both source and target directories and preserves them. All commands — sync, update, uninstall, list, diff, install — resolve symlinks and operate on the underlying directories without removing the links themselves. See [Dotfiles Manager Compatibility](/docs/reference/commands/sync#dotfiles-manager-compatibility) for details.
 
+If you version-control `config.yaml` via dotfiles, consider enabling `preserve_tilde_on_save: true` to keep paths as `~/...` instead of absolute — see [Configuration](/docs/reference/targets/configuration#preserve_tilde_on_save).
+
 ---
 
 ## Installation

@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.19.11] - 2026-05-14
+
+### New Features
+
+- **`preserve_tilde_on_save`** — opt-in config flag that folds `$HOME` prefixes back to `~` when saving `config.yaml`. Keeps the on-disk config portable across machines when shared via dotfiles (stow, chezmoi, yadm, bare git repo). Refs: #155
+  ```yaml
+  preserve_tilde_on_save: true
+  ```
+  Non-home absolute paths (e.g. `/opt/shared/skills`) are passed through unchanged. The in-memory config is unaffected — `Load()` still expands `~` as usual
+
+### Bug Fixes
+
+- Fixed `skillshare init -p` not gitignoring `.skillshare/backups/` — backup artifacts from project-mode agent sync could be accidentally committed
+
 ## [0.19.10] - 2026-05-12
 
 ### Bug Fixes

@@ -248,6 +248,16 @@ ssh-keygen -t ed25519 -C "your@email.com"
 # Add public key to GitHub
 ```
 
+### Portable paths for dotfiles
+
+If you share `config.yaml` via dotfiles, enable `preserve_tilde_on_save` to keep paths as `~/...` instead of `/home/alice/...`:
+
+```yaml
+preserve_tilde_on_save: true
+```
+
+This prevents noisy diffs when the same config is used across machines with different usernames or OS-specific home prefixes. See [Configuration — preserve_tilde_on_save](/docs/reference/targets/configuration#preserve_tilde_on_save).
+
 ### Multiple remotes
 
 Add backup remotes:

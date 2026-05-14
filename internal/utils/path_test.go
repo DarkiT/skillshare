@@ -26,7 +26,7 @@ func TestFoldHomePath(t *testing.T) {
 		{"home-child", home + sep + "foo", "~" + sep + "foo"},
 		{"home-deep", home + sep + ".config" + sep + "skillshare", "~" + sep + ".config" + sep + "skillshare"},
 		{"sibling-not-home", home + "_other" + sep + "foo", home + "_other" + sep + "foo"},
-		{"unrelated-abs", "/tmp/foo", "/tmp/foo"},
+		{"unrelated-abs", "/opt/unrelated/foo", "/opt/unrelated/foo"},
 		{"relative", "foo/bar", "foo/bar"},
 	}
 	for _, tt := range tests {

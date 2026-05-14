@@ -111,6 +111,9 @@ skills:
     source: github.com/team/skills
     tracked: true
 
+# Fold $HOME → ~ on save (dotfiles-friendly)
+# preserve_tilde_on_save: true
+
 # Custom agents source (optional, overrides default location)
 agents_source: ~/my-agents
 
@@ -604,6 +607,42 @@ context_budget:
 | `warn_on_demand_tokens` | integer | `100000` | Warn when on-demand tokens exceed this value. `0` disables |
 
 When omitted, defaults apply (10K / 100K). Use `skillshare sync --quiet` to suppress warnings. See [sync — Context Cost](/docs/reference/commands/sync#context-cost) for output format.
+
+### `preserve_tilde_on_save`
+
+When `true`, folds `$HOME` prefixes back to `~` before writing `config.yaml`. Keeps the on-disk config portable across machines — useful when the config is shared via dotfiles (stow, chezmoi, yadm, bare git repo).
+
+```yaml
+preserve_tilde_on_save: true
+```
+
+**Default:** `false` (existing behavior unchanged — paths are saved as absolute).
+
+Without this flag, every save rewrites `~/...` paths as `/home/alice/...` (the expanded form). When the config is version-controlled and shared across machines, this creates noisy diffs and breaks portability.
+
+With the flag enabled, the serialized YAML uses `~` for any path under `$HOME`:
+
+```yaml
+# Before (default): absolute, machine-specific
+source: /home/alice/.config/skillshare/skills
+targets:
+  claude:
+    skills:
+      path: /home/alice/.claude/skills
+
+# After (preserve_tilde_on_save: true): portable
+source: ~/.config/skillshare/skills
+targets:
+  claude:
+    skills:
+      path: ~/.claude/skills
+```
+
+The in-memory config is unaffected — `Load()` still expands `~` as usual. Non-home absolute paths (e.g. `/opt/shared/skills`) are passed through unchanged.
+
+:::note Global mode only
+This option applies to the global `config.yaml` only. Project configs (`.skillshare/config.yaml`) typically use relative paths and don't need tilde folding.
+:::
 
 ---
 

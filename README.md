@@ -264,6 +264,7 @@ Thanks to everyone who helped shape skillshare.
 <a href="https://github.com/thor-shuang"><img src="https://github.com/thor-shuang.png" width="50" style="border-radius:50%" alt="thor-shuang"></a>
 <a href="https://github.com/bishopmatthew"><img src="https://github.com/bishopmatthew.png" width="50" style="border-radius:50%" alt="bishopmatthew"></a>
 <a href="https://github.com/chaosky"><img src="https://github.com/chaosky.png" width="50" style="border-radius:50%" alt="chaosky"></a>
+<a href="https://github.com/iFwu"><img src="https://github.com/iFwu.png" width="50" style="border-radius:50%" alt="iFwu"></a>
 
 ---
 
