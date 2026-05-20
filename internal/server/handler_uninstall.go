@@ -259,9 +259,10 @@ func (s *Server) handleBatchUninstallSkills(w http.ResponseWriter, body batchUni
 		gitDir := s.gitignoreDir()
 		entries := repoEntriesToRemove
 		if s.IsProjectMode() {
+			prefix := s.projectGitignorePrefix()
 			entries = make([]string, len(repoEntriesToRemove))
 			for i, e := range repoEntriesToRemove {
-				entries[i] = filepath.Join("skills", e)
+				entries[i] = prefix + "/" + e
 			}
 		}
 		if _, err := install.RemoveFromGitIgnoreBatch(gitDir, entries); err != nil {

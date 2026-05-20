@@ -94,6 +94,7 @@ func cmdUninstallProject(args []string, root string) error {
 		sourceDir = filepath.Join(root, ".skillshare", "skills")
 	}
 	trashDir := trash.ProjectTrashDir(root)
+	gitignoreDir, gitignorePrefix := config.ProjectGitignoreTarget(root, sourceDir)
 
 	// Load centralized metadata store for display/reinstall hints.
 	skillsStore, _ := install.LoadMetadataWithMigration(sourceDir, "")
@@ -314,9 +315,9 @@ func cmdUninstallProject(args []string, root string) error {
 		if len(succeeded) > 0 {
 			entries := make([]string, len(succeeded))
 			for i, t := range succeeded {
-				entries[i] = filepath.Join("skills", t.name)
+				entries[i] = gitignorePrefix + "/" + t.name
 			}
-			install.RemoveFromGitIgnoreBatch(filepath.Join(root, ".skillshare"), entries) //nolint:errcheck
+			install.RemoveFromGitIgnoreBatch(gitignoreDir, entries) //nolint:errcheck
 		}
 
 		// Spinner end state
@@ -412,10 +413,10 @@ func cmdUninstallProject(args []string, root string) error {
 		if len(succeeded) > 0 {
 			entries := make([]string, len(succeeded))
 			for i, t := range succeeded {
-				entries[i] = filepath.Join("skills", t.name)
+				entries[i] = gitignorePrefix + "/" + t.name
 			}
-			if _, err := install.RemoveFromGitIgnoreBatch(filepath.Join(root, ".skillshare"), entries); err != nil {
-				ui.Warning("Could not update .skillshare/.gitignore: %v", err)
+			if _, err := install.RemoveFromGitIgnoreBatch(gitignoreDir, entries); err != nil {
+				ui.Warning("Could not update .gitignore: %v", err)
 			}
 		}
 	}

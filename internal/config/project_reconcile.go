@@ -18,9 +18,11 @@ func ReconcileProjectSkills(projectRoot string, projectCfg *ProjectConfig, store
 		return nil
 	}
 
+	gitignoreDir, prefix := ProjectGitignoreTarget(projectRoot, sourcePath)
+
 	var gitignoreEntries []string
 	onFound := func(fullPath string) {
-		gitignoreEntries = append(gitignoreEntries, filepath.Join("skills", fullPath))
+		gitignoreEntries = append(gitignoreEntries, prefix+"/"+fullPath)
 	}
 
 	result, err := reconcileSkillsWalk(sourcePath, store, onFound)
@@ -33,8 +35,8 @@ func ReconcileProjectSkills(projectRoot string, projectCfg *ProjectConfig, store
 	}
 
 	if len(gitignoreEntries) > 0 {
-		if err := install.UpdateGitIgnoreBatch(filepath.Join(projectRoot, ".skillshare"), gitignoreEntries); err != nil {
-			return fmt.Errorf("failed to update .skillshare/.gitignore: %w", err)
+		if err := install.UpdateGitIgnoreBatch(gitignoreDir, gitignoreEntries); err != nil {
+			return fmt.Errorf("failed to update .gitignore: %w", err)
 		}
 	}
 

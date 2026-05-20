@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"skillshare/internal/config"
 	"skillshare/internal/install"
 	"skillshare/internal/trash"
 )
@@ -252,6 +253,7 @@ func TestHandleUninstallRepo_ProjectMode_GitignorePath(t *testing.T) {
 	projectSkillsDir := filepath.Join(projectRoot, ".skillshare", "skills")
 	os.MkdirAll(projectSkillsDir, 0755)
 	s.projectRoot = projectRoot
+	s.projectCfg = &config.ProjectConfig{}
 	s.cfg.Source = projectSkillsDir
 
 	// Create tracked repo inside project skills dir

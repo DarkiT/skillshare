@@ -502,8 +502,9 @@ func installFromSearchResultProject(result search.SearchResult, cwd string) (err
 	}
 
 	// Update .gitignore for the installed skill
-	if err := install.UpdateGitIgnore(filepath.Join(runtime.root, ".skillshare"), filepath.Join("skills", result.Name)); err != nil {
-		ui.Warning("Failed to update .skillshare/.gitignore: %v", err)
+	gitDir, gitPrefix := config.ProjectGitignoreTarget(runtime.root, runtime.sourcePath)
+	if err := install.UpdateGitIgnore(gitDir, gitPrefix+"/"+result.Name); err != nil {
+		ui.Warning("Failed to update .gitignore: %v", err)
 	}
 
 	// Reconcile project config with installed skills

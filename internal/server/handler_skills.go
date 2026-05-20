@@ -380,10 +380,9 @@ func (s *Server) handleUninstallRepo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Remove from .gitignore (project mode writes to .skillshare/.gitignore with "skills/" prefix)
 	gitDir := s.gitignoreDir()
 	if s.IsProjectMode() {
-		install.RemoveFromGitIgnore(gitDir, filepath.Join("skills", repoName))
+		install.RemoveFromGitIgnore(gitDir, s.projectGitignorePrefix()+"/"+repoName)
 	} else {
 		install.RemoveFromGitIgnore(gitDir, repoName)
 	}

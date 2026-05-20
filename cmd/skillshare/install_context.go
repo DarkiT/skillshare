@@ -1,8 +1,6 @@
 package main
 
 import (
-	"path/filepath"
-
 	"skillshare/internal/config"
 	"skillshare/internal/install"
 )
@@ -83,10 +81,8 @@ func (p *projectInstallContext) Reconcile() error {
 	return reconcileProjectRemoteSkills(p.runtime)
 }
 func (p *projectInstallContext) PostInstallSkill(displayName string) error {
-	return install.UpdateGitIgnore(
-		filepath.Join(p.runtime.root, ".skillshare"),
-		filepath.Join("skills", displayName),
-	)
+	gitDir, prefix := config.ProjectGitignoreTarget(p.runtime.root, p.runtime.sourcePath)
+	return install.UpdateGitIgnore(gitDir, prefix+"/"+displayName)
 }
 func (p *projectInstallContext) Mode() string { return "project" }
 func (p *projectInstallContext) GitLabHosts() []string {

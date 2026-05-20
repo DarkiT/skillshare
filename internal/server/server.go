@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strings"
 	"sync"
 	"syscall"
@@ -190,9 +189,15 @@ func (s *Server) parseOpts() install.ParseOptions {
 // in global mode this is the source skill directory.
 func (s *Server) gitignoreDir() string {
 	if s.IsProjectMode() {
-		return filepath.Join(s.projectRoot, ".skillshare")
+		dir, _ := config.ProjectGitignoreTarget(s.projectRoot, s.skillsSource())
+		return dir
 	}
 	return s.cfg.Source
+}
+
+func (s *Server) projectGitignorePrefix() string {
+	_, prefix := config.ProjectGitignoreTarget(s.projectRoot, s.skillsSource())
+	return prefix
 }
 
 // configPath returns the config file path for the current mode
@@ -238,6 +243,8 @@ func (s *Server) reloadConfig() error {
 		s.cfg.Targets = targets
 		skillsDir := pcfg.EffectiveSkillsSource(s.projectRoot)
 		agentsDir := pcfg.EffectiveAgentsSource(s.projectRoot)
+		s.cfg.Source = skillsDir
+		s.cfg.AgentsSource = agentsDir
 		if st, err := install.LoadMetadata(skillsDir); err == nil {
 			s.skillsStore = st
 		}

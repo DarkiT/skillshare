@@ -299,6 +299,22 @@ func (c *ProjectConfig) EffectiveExtrasSource(projectRoot string) string {
 	return filepath.Join(projectRoot, ".skillshare", "extras")
 }
 
+// ProjectGitignoreTarget returns the directory containing the .gitignore to
+// manage and the entry prefix for skills inside sourcePath. When sourcePath is
+// under .skillshare/, it returns (.skillshare/, "skills"). Otherwise it returns
+// (projectRoot, relative-path-to-source) so that entries land in the project
+// root .gitignore with correct paths.
+func ProjectGitignoreTarget(projectRoot, sourcePath string) (gitignoreDir, entryPrefix string) {
+	skillshareDir := filepath.Join(projectRoot, ".skillshare")
+	if rel, err := filepath.Rel(skillshareDir, sourcePath); err == nil && !strings.HasPrefix(rel, "..") {
+		return skillshareDir, filepath.ToSlash(rel)
+	}
+	if rel, err := filepath.Rel(projectRoot, sourcePath); err == nil {
+		return projectRoot, filepath.ToSlash(rel)
+	}
+	return skillshareDir, "skills"
+}
+
 func resolveProjectSourcePath(projectRoot, path string) string {
 	if filepath.IsAbs(path) {
 		return filepath.Clean(path)
