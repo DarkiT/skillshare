@@ -311,6 +311,9 @@ func ProjectGitignoreTarget(projectRoot, sourcePath string) (gitignoreDir, entry
 		return skillshareDir, filepath.ToSlash(rel)
 	}
 	if rel, err := filepath.Rel(projectRoot, sourcePath); err == nil && !strings.HasPrefix(rel, "..") {
+		if rel == "." {
+			return projectRoot, ""
+		}
 		return projectRoot, filepath.ToSlash(rel)
 	}
 	return "", ""

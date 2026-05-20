@@ -280,6 +280,17 @@ func TestProjectGitignoreTarget_InsideProject(t *testing.T) {
 	}
 }
 
+func TestProjectGitignoreTarget_ProjectRoot(t *testing.T) {
+	root := "/project"
+	dir, prefix := ProjectGitignoreTarget(root, root)
+	if dir != root {
+		t.Errorf("dir = %q, want %q", dir, root)
+	}
+	if prefix != "" {
+		t.Errorf("prefix should be empty for source==root, got %q", prefix)
+	}
+}
+
 func TestProjectGitignoreTarget_OutsideProject(t *testing.T) {
 	root := "/project/app"
 	source := "/shared/skills"
