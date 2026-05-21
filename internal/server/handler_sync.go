@@ -83,7 +83,7 @@ func (s *Server) handleSync(w http.ResponseWriter, r *http.Request) {
 	// Skill sync (skip when kind == "agent")
 	if body.Kind != kindAgent {
 		var err error
-		allSkills, ignoreStats, err = ssync.DiscoverSourceSkillsWithStatsAndContext(s.cfg.Source)
+		allSkills, ignoreStats, err = ssync.DiscoverSourceSkillsWithStatsAndContext(s.cfg.EffectiveSkillsSource())
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to discover skills: "+err.Error())
 			return
@@ -123,7 +123,7 @@ func (s *Server) handleSync(w http.ResponseWriter, r *http.Request) {
 
 			switch mode {
 			case "merge":
-				mergeResult, err := ssync.SyncTargetMergeWithSkills(name, target, allSkills, s.cfg.Source, body.DryRun, body.Force, s.projectRoot)
+				mergeResult, err := ssync.SyncTargetMergeWithSkills(name, target, allSkills, s.cfg.EffectiveSkillsSource(), body.DryRun, body.Force, s.projectRoot)
 				if err != nil {
 					s.writeOpsLog("sync", "error", start, syncErrArgs, err.Error())
 					writeError(w, http.StatusInternalServerError, "sync failed for "+name+": "+err.Error())
@@ -135,7 +135,7 @@ func (s *Server) handleSync(w http.ResponseWriter, r *http.Request) {
 				res.DirCreated = mergeResult.DirCreated
 
 				pruneResult, err := ssync.PruneOrphanLinksWithSkills(ssync.PruneOptions{
-					TargetPath: sc.Path, SourcePath: s.cfg.Source, Skills: allSkills,
+					TargetPath: sc.Path, SourcePath: s.cfg.EffectiveSkillsSource(), Skills: allSkills,
 					Include: sc.Include, Exclude: sc.Exclude, TargetNaming: sc.TargetNaming, TargetName: name,
 					DryRun: body.DryRun, Force: body.Force,
 				})
@@ -144,7 +144,7 @@ func (s *Server) handleSync(w http.ResponseWriter, r *http.Request) {
 				}
 
 			case "copy":
-				copyResult, err := ssync.SyncTargetCopyWithSkills(name, target, allSkills, s.cfg.Source, body.DryRun, body.Force, nil)
+				copyResult, err := ssync.SyncTargetCopyWithSkills(name, target, allSkills, s.cfg.EffectiveSkillsSource(), body.DryRun, body.Force, nil)
 				if err != nil {
 					s.writeOpsLog("sync", "error", start, syncErrArgs, err.Error())
 					writeError(w, http.StatusInternalServerError, "sync failed for "+name+": "+err.Error())
@@ -161,7 +161,7 @@ func (s *Server) handleSync(w http.ResponseWriter, r *http.Request) {
 				}
 
 			default:
-				err := ssync.SyncTarget(name, target, s.cfg.Source, body.DryRun, s.projectRoot)
+				err := ssync.SyncTarget(name, target, s.cfg.EffectiveSkillsSource(), body.DryRun, s.projectRoot)
 				if err != nil {
 					s.writeOpsLog("sync", "error", start, syncErrArgs, err.Error())
 					writeError(w, http.StatusInternalServerError, "sync failed for "+name+": "+err.Error())
@@ -425,7 +425,7 @@ type diffTarget struct {
 func (s *Server) handleDiff(w http.ResponseWriter, r *http.Request) {
 	// Snapshot config under RLock, then release before slow I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	agentsSource := s.agentsSource()
 	globalMode := s.cfg.Mode
 	targets := s.cloneTargets()

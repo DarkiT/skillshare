@@ -28,7 +28,7 @@ type skillignoreResponse struct {
 func (s *Server) handleGetSkillignore(w http.ResponseWriter, r *http.Request) {
 	// Snapshot source path under RLock, then release before I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	s.mu.RUnlock()
 
 	ignorePath := filepath.Join(source, ".skillignore")
@@ -76,7 +76,7 @@ func (s *Server) handlePutSkillignore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	ignorePath := filepath.Join(source, ".skillignore")
 
 	if body.Raw == "" {

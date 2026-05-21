@@ -208,7 +208,7 @@ func runAnalyze(opts *analyzeOptions) error {
 	}
 	if opts.targetName == "" && !opts.json && shouldLaunchTUI(opts.noTUI, cfg) {
 		loadFn := func() analyzeLoadResult {
-			discovered, err := ssync.DiscoverSourceSkillsForAnalyze(cfg.Source)
+			discovered, err := ssync.DiscoverSourceSkillsForAnalyze(cfg.EffectiveSkillsSource())
 			if err != nil {
 				return analyzeLoadResult{err: err}
 			}
@@ -220,7 +220,7 @@ func runAnalyze(opts *analyzeOptions) error {
 		}
 		return runAnalyzeTUI(loadFn, "global", opts.filter)
 	}
-	return runAnalyzeCore(cfg.Source, cfg.Targets, cfg.Mode, cfg.ContextBudget, opts)
+	return runAnalyzeCore(cfg.EffectiveSkillsSource(), cfg.Targets, cfg.Mode, cfg.ContextBudget, opts)
 }
 
 const charsPerToken = 4

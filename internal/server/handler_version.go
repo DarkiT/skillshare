@@ -10,7 +10,7 @@ import (
 func (s *Server) handleVersionCheck(w http.ResponseWriter, r *http.Request) {
 	// Snapshot config under RLock, then release before I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	projectRoot := s.projectRoot
 	s.mu.RUnlock()
 

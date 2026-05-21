@@ -27,7 +27,7 @@ func (s *Server) handleDiffStream(w http.ResponseWriter, r *http.Request) {
 
 	// Snapshot config under RLock, then release before slow I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	agentsSource := s.agentsSource()
 	globalMode := s.cfg.Mode
 	targets := s.cloneTargets()

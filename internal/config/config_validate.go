@@ -13,20 +13,22 @@ import (
 func ValidateConfig(cfg *Config) (warnings []string, err error) {
 	var errs []string
 
-	// Source path validation
-	if cfg.Source == "" {
+	// Source path validation — requires the user to explicitly configure
+	// either the legacy `source:` field or the new `sources.skills:` map,
+	// then verifies the resolved path exists and is a directory.
+	if cfg.Source == "" && cfg.Sources.Skills == "" {
 		errs = append(errs, "source path is empty")
 	} else {
-		expanded := ExpandPath(cfg.Source)
-		info, statErr := os.Stat(expanded)
+		sourcePath := cfg.EffectiveSkillsSource()
+		info, statErr := os.Stat(sourcePath)
 		if statErr != nil {
 			if os.IsNotExist(statErr) {
-				errs = append(errs, fmt.Sprintf("source path does not exist: %s", cfg.Source))
+				errs = append(errs, fmt.Sprintf("source path does not exist: %s", sourcePath))
 			} else {
 				errs = append(errs, fmt.Sprintf("cannot access source path: %v", statErr))
 			}
 		} else if !info.IsDir() {
-			errs = append(errs, fmt.Sprintf("source path is not a directory: %s", cfg.Source))
+			errs = append(errs, fmt.Sprintf("source path is not a directory: %s", sourcePath))
 		}
 	}
 

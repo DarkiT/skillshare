@@ -38,7 +38,7 @@ const analyzeCharsPerToken = 4
 
 func (s *Server) handleAnalyze(w http.ResponseWriter, r *http.Request) {
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	targets := s.cfg.Targets
 	defaultMode := s.cfg.Mode
 	s.mu.RUnlock()

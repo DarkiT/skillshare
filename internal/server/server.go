@@ -83,7 +83,7 @@ func (s *Server) wrapBasePath() {
 // New creates a new Server for global mode.
 // uiDistDir, when non-empty, serves UI from disk instead of the embedded SPA.
 func New(cfg *config.Config, addr, basePath, uiDistDir string) *Server {
-	skillsStore, _ := install.LoadMetadataWithMigration(cfg.Source, "")
+	skillsStore, _ := install.LoadMetadataWithMigration(cfg.EffectiveSkillsSource(), "")
 	if skillsStore == nil {
 		skillsStore = install.NewMetadataStore()
 	}
@@ -147,7 +147,7 @@ func (s *Server) skillsSource() string {
 	if s.IsProjectMode() {
 		return s.projectCfg.EffectiveSkillsSource(s.projectRoot)
 	}
-	return s.cfg.Source
+	return s.cfg.EffectiveSkillsSource()
 }
 
 // agentsSource returns the agents source directory for the current mode.
@@ -192,7 +192,7 @@ func (s *Server) gitignoreDir() string {
 		dir, _ := config.ProjectGitignoreTarget(s.projectRoot, s.skillsSource())
 		return dir
 	}
-	return s.cfg.Source
+	return s.cfg.EffectiveSkillsSource()
 }
 
 func (s *Server) projectGitignorePrefix() string {
@@ -258,7 +258,7 @@ func (s *Server) reloadConfig() error {
 		return err
 	}
 	s.cfg = newCfg
-	if st, err := install.LoadMetadata(newCfg.Source); err == nil {
+	if st, err := install.LoadMetadata(newCfg.EffectiveSkillsSource()); err == nil {
 		s.skillsStore = st
 	}
 	if st, err := install.LoadMetadata(newCfg.EffectiveAgentsSource()); err == nil {

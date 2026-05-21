@@ -41,7 +41,7 @@ type collectSkillRef struct {
 func (s *Server) handleCollectScan(w http.ResponseWriter, r *http.Request) {
 	// Snapshot config under RLock, then release before I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	globalMode := s.cfg.Mode
 	targets := s.cloneTargets()
 	agentsSource := s.agentsSource()
@@ -223,7 +223,7 @@ func (s *Server) handleCollect(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 
-		result, err := ssync.PullSkills(resolved, s.cfg.Source, opts)
+		result, err := ssync.PullSkills(resolved, s.cfg.EffectiveSkillsSource(), opts)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "collect failed: "+err.Error())
 			return

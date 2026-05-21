@@ -114,7 +114,7 @@ func cmdStatus(args []string) error {
 
 	if !jsonOutput {
 		sp := ui.StartSpinner("Discovering skills...")
-		discovered, stats, discoverErr := sync.DiscoverSourceSkillsWithStats(cfg.Source)
+		discovered, stats, discoverErr := sync.DiscoverSourceSkillsWithStats(cfg.EffectiveSkillsSource())
 		if discoverErr != nil {
 			discovered = nil
 		}
@@ -131,7 +131,7 @@ func cmdStatus(args []string) error {
 		if len(cfg.Extras) > 0 {
 			ui.Header("Extras")
 			printExtrasStatus(cfg.Extras, func(extra config.ExtraConfig) string {
-				return config.ResolveExtrasSourceDir(extra, cfg.ExtrasSource, cfg.Source)
+				return config.ResolveExtrasSourceDir(extra, cfg.EffectiveExtrasSource(), cfg.EffectiveSkillsSource())
 			})
 		}
 
@@ -145,21 +145,21 @@ func cmdStatus(args []string) error {
 		Version: version,
 	}
 
-	discovered, stats, _ := sync.DiscoverSourceSkillsWithStats(cfg.Source)
+	discovered, stats, _ := sync.DiscoverSourceSkillsWithStats(cfg.EffectiveSkillsSource())
 	trackedRepos := extractTrackedRepos(discovered)
 
 	output.Source = statusJSONSource{
-		Path:        cfg.Source,
-		Exists:      dirExists(cfg.Source),
+		Path:        cfg.EffectiveSkillsSource(),
+		Exists:      dirExists(cfg.EffectiveSkillsSource()),
 		Skillignore: buildSkillignoreJSON(stats),
 	}
 	output.SkillCount = len(discovered)
-	output.TrackedRepos = buildTrackedRepoJSON(cfg.Source, trackedRepos, discovered)
+	output.TrackedRepos = buildTrackedRepoJSON(cfg.EffectiveSkillsSource(), trackedRepos, discovered)
 
 	for name, target := range cfg.Targets {
 		sc := target.SkillsConfig()
 		tMode := getTargetMode(sc.Mode, cfg.Mode)
-		res := getTargetStatusDetail(target, cfg.Source, tMode)
+		res := getTargetStatusDetail(target, cfg.EffectiveSkillsSource(), tMode)
 		output.Targets = append(output.Targets, statusJSONTarget{
 			Name:        name,
 			Path:        sc.Path,
@@ -215,13 +215,13 @@ func printExtrasStatus(extras []config.ExtraConfig, sourceDirFn func(config.Extr
 
 func printSourceStatus(cfg *config.Config, skillCount int, stats *skillignore.IgnoreStats) {
 	ui.Header("Source")
-	info, err := os.Stat(cfg.Source)
+	info, err := os.Stat(cfg.EffectiveSkillsSource())
 	if err != nil {
-		ui.Error("%s (not found)", cfg.Source)
+		ui.Error("%s (not found)", cfg.EffectiveSkillsSource())
 		return
 	}
 
-	ui.Success("%s (%d skills, %s)", cfg.Source, skillCount, info.ModTime().Format("2006-01-02 15:04"))
+	ui.Success("%s (%d skills, %s)", cfg.EffectiveSkillsSource(), skillCount, info.ModTime().Format("2006-01-02 15:04"))
 	printSkillignoreLine(stats)
 
 	// Agents source
@@ -281,7 +281,7 @@ func printTrackedReposStatus(cfg *config.Config, discovered []sync.DiscoveredSki
 
 	ui.Header("Tracked Repositories")
 	for _, repoName := range trackedRepos {
-		repoPath := filepath.Join(cfg.Source, repoName)
+		repoPath := filepath.Join(cfg.EffectiveSkillsSource(), repoName)
 
 		skillCount := 0
 		for _, d := range discovered {
@@ -388,7 +388,7 @@ func printTargetsStatus(cfg *config.Config, discovered []sync.DiscoveredSkill) e
 		// Skills sub-item
 		sc := target.SkillsConfig()
 		mode := getTargetMode(sc.Mode, cfg.Mode)
-		res := getTargetStatusDetail(target, cfg.Source, mode)
+		res := getTargetStatusDetail(target, cfg.EffectiveSkillsSource(), mode)
 		printTargetSubItem("skills", res.statusStr, res.detail)
 
 		if mode == "merge" || mode == "copy" {
@@ -533,7 +533,7 @@ func checkSkillVersion(cfg *config.Config) {
 	ui.Success("CLI: %s", version)
 
 	// Skill version
-	localVersion := versioncheck.ReadLocalSkillVersion(cfg.Source)
+	localVersion := versioncheck.ReadLocalSkillVersion(cfg.EffectiveSkillsSource())
 
 	if localVersion == "" {
 		ui.Warning("Skill: not found or missing version")

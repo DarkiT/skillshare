@@ -190,7 +190,7 @@ func cmdSync(args []string) error {
 	if !jsonOutput {
 		spinner = ui.StartSpinner("Discovering skills")
 	}
-	discoveredSkills, ignoreStats, discoverErr := sync.DiscoverSourceSkillsWithStatsAndContext(cfg.Source)
+	discoveredSkills, ignoreStats, discoverErr := sync.DiscoverSourceSkillsWithStatsAndContext(cfg.EffectiveSkillsSource())
 	if discoverErr != nil {
 		if spinner != nil {
 			spinner.Fail("Discovery failed")
@@ -226,9 +226,9 @@ func cmdSync(args []string) error {
 	var results []syncTargetResult
 	var failedTargets int
 	if jsonOutput {
-		results, failedTargets = runParallelSyncQuiet(entries, cfg.Source, discoveredSkills, dryRun, force, "")
+		results, failedTargets = runParallelSyncQuiet(entries, cfg.EffectiveSkillsSource(), discoveredSkills, dryRun, force, "")
 	} else {
-		results, failedTargets = runParallelSync(entries, cfg.Source, discoveredSkills, dryRun, force, "")
+		results, failedTargets = runParallelSync(entries, cfg.EffectiveSkillsSource(), discoveredSkills, dryRun, force, "")
 	}
 
 	var syncErr error
@@ -294,7 +294,7 @@ func cmdSync(args []string) error {
 		if hasAll && len(cfg.Extras) > 0 {
 			agentPaths := collectAgentTargetPathsGlobal(cfg)
 			extrasEntries := runExtrasSyncEntries(cfg.Extras, func(extra config.ExtraConfig) string {
-				return config.ResolveExtrasSourceDir(extra, cfg.ExtrasSource, cfg.Source)
+				return config.ResolveExtrasSourceDir(extra, cfg.EffectiveExtrasSource(), cfg.EffectiveSkillsSource())
 			}, dryRun, force, "", agentPaths)
 			return syncOutputJSON(results, dryRun, start, ignoreStats, syncErr, ctxCost, extrasEntries)
 		}
@@ -491,11 +491,11 @@ func syncTarget(name string, target config.TargetConfig, cfg *config.Config, dry
 
 	switch mode {
 	case "merge":
-		return syncMergeMode(name, target, cfg.Source, dryRun, force)
+		return syncMergeMode(name, target, cfg.EffectiveSkillsSource(), dryRun, force)
 	case "copy":
-		return syncCopyMode(name, target, cfg.Source, dryRun, force)
+		return syncCopyMode(name, target, cfg.EffectiveSkillsSource(), dryRun, force)
 	default:
-		return syncSymlinkMode(name, target, cfg.Source, dryRun, force)
+		return syncSymlinkMode(name, target, cfg.EffectiveSkillsSource(), dryRun, force)
 	}
 }
 
@@ -516,11 +516,11 @@ func syncTargetWithSkillsStats(name string, target config.TargetConfig, cfg *con
 
 	switch mode {
 	case "merge":
-		return syncMergeModeWithSkills(name, target, cfg.Source, skills, dryRun, force)
+		return syncMergeModeWithSkills(name, target, cfg.EffectiveSkillsSource(), skills, dryRun, force)
 	case "copy":
-		return syncCopyModeWithSkills(name, target, cfg.Source, skills, dryRun, force)
+		return syncCopyModeWithSkills(name, target, cfg.EffectiveSkillsSource(), skills, dryRun, force)
 	default:
-		err := syncSymlinkMode(name, target, cfg.Source, dryRun, force)
+		err := syncSymlinkMode(name, target, cfg.EffectiveSkillsSource(), dryRun, force)
 		return syncModeStats{}, err
 	}
 }

@@ -126,7 +126,7 @@ func (s *Server) handleInstallBatch(w http.ResponseWriter, r *http.Request) {
 
 	// Ensure Into directory exists
 	if body.Into != "" {
-		baseDir := s.cfg.Source
+		baseDir := s.cfg.EffectiveSkillsSource()
 		if body.Kind == "agent" {
 			baseDir = s.agentsSource()
 		}
@@ -145,7 +145,7 @@ func (s *Server) handleInstallBatch(w http.ResponseWriter, r *http.Request) {
 		SkipAudit:      body.SkipAudit,
 		AuditThreshold: s.auditThreshold(),
 		Branch:         body.Branch,
-		SourceDir:      s.cfg.Source,
+		SourceDir:      s.cfg.EffectiveSkillsSource(),
 	}
 	if s.IsProjectMode() {
 		installOpts.AuditProjectRoot = s.projectRoot
@@ -187,7 +187,7 @@ func (s *Server) handleInstallBatch(w http.ResponseWriter, r *http.Request) {
 			})
 		} else {
 			// Skill install: copy directory to skills source
-			destPath := filepath.Join(s.cfg.Source, body.Into, skillName)
+			destPath := filepath.Join(s.cfg.EffectiveSkillsSource(), body.Into, skillName)
 			res, err := install.InstallFromDiscovery(discovery, install.SkillInfo{
 				Name: sel.Name,
 				Path: sel.Path,
@@ -269,7 +269,7 @@ func (s *Server) handleInstallBatch(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if s.IsProjectMode() {
-			if rErr := config.ReconcileProjectSkills(s.projectRoot, s.projectCfg, s.skillsStore, s.cfg.Source); rErr != nil {
+			if rErr := config.ReconcileProjectSkills(s.projectRoot, s.projectCfg, s.skillsStore, s.cfg.EffectiveSkillsSource()); rErr != nil {
 				log.Printf("warning: failed to reconcile project skills config: %v", rErr)
 			}
 		} else {
@@ -329,7 +329,7 @@ func (s *Server) handleInstall(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		trackSourceDir := s.cfg.Source
+		trackSourceDir := s.cfg.EffectiveSkillsSource()
 		if trackedKind == "agent" {
 			trackSourceDir = s.agentsSource()
 		}
@@ -373,7 +373,7 @@ func (s *Server) handleInstall(w http.ResponseWriter, r *http.Request) {
 		// Reconcile config after tracked repo install
 		if trackedKind == "skill" {
 			if s.IsProjectMode() {
-				if rErr := config.ReconcileProjectSkills(s.projectRoot, s.projectCfg, s.skillsStore, s.cfg.Source); rErr != nil {
+				if rErr := config.ReconcileProjectSkills(s.projectRoot, s.projectCfg, s.skillsStore, s.cfg.EffectiveSkillsSource()); rErr != nil {
 					log.Printf("warning: failed to reconcile project skills config: %v", rErr)
 				}
 			} else {
@@ -418,16 +418,16 @@ func (s *Server) handleInstall(w http.ResponseWriter, r *http.Request) {
 
 	// Cross-path duplicate detection
 	if !body.Force && source.CloneURL != "" {
-		if err := install.CheckCrossPathDuplicate(s.cfg.Source, source.CloneURL, body.Into); err != nil {
+		if err := install.CheckCrossPathDuplicate(s.cfg.EffectiveSkillsSource(), source.CloneURL, body.Into); err != nil {
 			writeError(w, http.StatusConflict, err.Error())
 			return
 		}
 	}
 
 	// Regular install
-	destPath := filepath.Join(s.cfg.Source, body.Into, source.Name)
+	destPath := filepath.Join(s.cfg.EffectiveSkillsSource(), body.Into, source.Name)
 	if body.Into != "" {
-		if err := os.MkdirAll(filepath.Join(s.cfg.Source, body.Into), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Join(s.cfg.EffectiveSkillsSource(), body.Into), 0755); err != nil {
 			writeError(w, http.StatusInternalServerError, "failed to create into directory: "+err.Error())
 			return
 		}
@@ -461,7 +461,7 @@ func (s *Server) handleInstall(w http.ResponseWriter, r *http.Request) {
 
 	// Reconcile config after single install
 	if s.IsProjectMode() {
-		if rErr := config.ReconcileProjectSkills(s.projectRoot, s.projectCfg, s.skillsStore, s.cfg.Source); rErr != nil {
+		if rErr := config.ReconcileProjectSkills(s.projectRoot, s.projectCfg, s.skillsStore, s.cfg.EffectiveSkillsSource()); rErr != nil {
 			log.Printf("warning: failed to reconcile project skills config: %v", rErr)
 		}
 	} else {

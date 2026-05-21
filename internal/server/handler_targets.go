@@ -39,7 +39,7 @@ type targetItem struct {
 func (s *Server) handleListTargets(w http.ResponseWriter, r *http.Request) {
 	// Snapshot config under RLock, then release before I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	cfgMode := s.cfg.Mode
 	targets := s.cloneTargets()
 	isProjectMode := s.IsProjectMode()
@@ -454,7 +454,7 @@ func (s *Server) unlinkMergeSymlinks(targetPath string) {
 		return
 	}
 
-	absSource, err := filepath.Abs(s.cfg.Source)
+	absSource, err := filepath.Abs(s.cfg.EffectiveSkillsSource())
 	if err != nil {
 		return
 	}

@@ -49,7 +49,7 @@ func (s *Server) handleListSkills(w http.ResponseWriter, r *http.Request) {
 
 	// Snapshot config under RLock, then release before I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	agentsSource := s.agentsSource()
 	s.mu.RUnlock()
 
@@ -137,7 +137,7 @@ func (s *Server) handleListSkills(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleGetSkill(w http.ResponseWriter, r *http.Request) {
 	// Snapshot config under RLock, then release before I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	agentsSource := s.agentsSource()
 	s.mu.RUnlock()
 
@@ -292,7 +292,7 @@ func (s *Server) handleGetSkill(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleGetSkillFile(w http.ResponseWriter, r *http.Request) {
 	// Snapshot config under RLock, then release before I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	s.mu.RUnlock()
 
 	name := r.PathValue("name")
@@ -430,7 +430,7 @@ func (s *Server) handleUninstallRepo(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := s.skillsStore.Save(s.cfg.Source); err != nil {
+	if err := s.skillsStore.Save(s.cfg.EffectiveSkillsSource()); err != nil {
 		log.Printf("warning: failed to save metadata after repo uninstall: %v", err)
 	}
 
@@ -492,7 +492,7 @@ func (s *Server) handleUninstallSkill(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Find skill path
-	discovered, err := sync.DiscoverSourceSkills(s.cfg.Source)
+	discovered, err := sync.DiscoverSourceSkills(s.cfg.EffectiveSkillsSource())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -529,10 +529,10 @@ func (s *Server) handleUninstallSkill(w http.ResponseWriter, r *http.Request) {
 }
 
 // resolveTrackedRepo resolves a repo name (flat or nested) to its directory name
-// and absolute path under s.cfg.Source. Returns ("", "", nil) if not found.
+// and absolute path under s.cfg.EffectiveSkillsSource(). Returns ("", "", nil) if not found.
 // Returns a non-nil error for ambiguous matches or internal failures.
 func (s *Server) resolveTrackedRepo(input string) (string, string, error) {
-	sourceRoot := filepath.Clean(s.cfg.Source)
+	sourceRoot := filepath.Clean(s.cfg.EffectiveSkillsSource())
 	candidates := []string{input}
 	if !strings.HasPrefix(filepath.Base(input), "_") {
 		if dir := filepath.Dir(input); dir != "." && dir != "" {
@@ -553,7 +553,7 @@ func (s *Server) resolveTrackedRepo(input string) (string, string, error) {
 	}
 
 	// Fallback: match nested tracked repos by basename.
-	repos, err := install.GetTrackedRepos(s.cfg.Source)
+	repos, err := install.GetTrackedRepos(s.cfg.EffectiveSkillsSource())
 	if err != nil {
 		return "", "", fmt.Errorf("failed to list tracked repositories: %w", err)
 	}

@@ -348,7 +348,7 @@ func collectSearchInstallGlobal(result search.SearchResult, cfg *config.Config, 
 		return r
 	}
 
-	destPath := filepath.Join(cfg.Source, result.Name)
+	destPath := filepath.Join(cfg.EffectiveSkillsSource(), result.Name)
 
 	// Check if already exists
 	if _, err := os.Stat(destPath); err == nil {
@@ -565,7 +565,7 @@ func batchInstallFromSearchWithProgress(selected []search.SearchResult, mode run
 			_ = reconcileProjectRemoteSkills(runtime)
 		}
 	} else {
-		store, _ := install.LoadMetadataWithMigration(cfg.Source, "")
+		store, _ := install.LoadMetadataWithMigration(cfg.EffectiveSkillsSource(), "")
 		if store == nil {
 			store = install.NewMetadataStore()
 		}
@@ -602,7 +602,7 @@ func resolveBatchSourceDir(mode runMode, cfg *config.Config, cwd string) (string
 		}
 		return runtime.sourcePath, nil
 	}
-	return cfg.Source, nil
+	return cfg.EffectiveSkillsSource(), nil
 }
 
 // installFromDiscoveryResult installs a single skill from a pre-cloned discovery result.

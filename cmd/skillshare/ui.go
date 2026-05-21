@@ -193,7 +193,7 @@ func loadUIConfig() (*config.Config, error) {
 		return nil, fmt.Errorf("skillshare is not initialized: run 'skillshare init' first")
 	}
 
-	source := strings.TrimSpace(cfg.Source)
+	source := strings.TrimSpace(cfg.EffectiveSkillsSource())
 	if source == "" {
 		return nil, fmt.Errorf("invalid config: source is empty (run 'skillshare init' first)")
 	}

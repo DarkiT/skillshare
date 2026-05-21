@@ -127,9 +127,15 @@ func cmdExtrasList(args []string) error {
 			return err
 		}
 		extras = cfg.Extras
+		// extrasSource holds the user's explicit configuration (legacy
+		// extras_source or new sources.extras); used by ResolveExtrasSourceType
+		// to distinguish "default" (derived) from "extras_source" (configured).
 		extrasSource = cfg.ExtrasSource
+		if extrasSource == "" {
+			extrasSource = cfg.Sources.Extras
+		}
 		sourceFunc = func(extra config.ExtraConfig) string {
-			return config.ResolveExtrasSourceDir(extra, cfg.ExtrasSource, cfg.Source)
+			return config.ResolveExtrasSourceDir(extra, cfg.EffectiveExtrasSource(), cfg.EffectiveSkillsSource())
 		}
 		configPath = config.ConfigPath()
 	}
@@ -167,6 +173,9 @@ func cmdExtrasList(args []string) error {
 				}
 				ex = c.Extras
 				es = c.ExtrasSource
+				if es == "" {
+					es = c.Sources.Extras
+				}
 			}
 			return buildExtrasListEntries(ex, es, sourceFunc), nil
 		}

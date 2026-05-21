@@ -225,13 +225,13 @@ func cmdCheck(args []string) error {
 
 	// No names and no groups → check all (existing behavior)
 	if len(opts.names) == 0 && len(opts.groups) == 0 {
-		cmdErr := runCheck(cfg.Source, opts.json, targetNamesFromConfig(cfg.Targets))
+		cmdErr := runCheck(cfg.EffectiveSkillsSource(), opts.json, targetNamesFromConfig(cfg.Targets))
 		logCheckOp(cfgPath, 0, 0, 0, 0, scope, start, cmdErr)
 		return cmdErr
 	}
 
 	// Filtered check: resolve targets then check only those
-	cmdErr := runCheckFiltered(cfg.Source, opts)
+	cmdErr := runCheckFiltered(cfg.EffectiveSkillsSource(), opts)
 	logCheckOp(cfgPath, 0, 0, 0, 0, scope, start, cmdErr)
 	return cmdErr
 }

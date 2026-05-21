@@ -960,9 +960,12 @@ func TestInit_SetsExtrasSource(t *testing.T) {
 	}
 }
 
-// TestExtrasInit_BackfillsExtrasSource verifies that "extras init" backfills
-// extras_source when it is missing from an existing config.
-func TestExtrasInit_BackfillsExtrasSource(t *testing.T) {
+// TestExtrasInit_PreservesEmptyExtrasSource verifies that "extras init" does
+// NOT silently backfill the legacy extras_source field when it was absent.
+// Config.EffectiveExtrasSource() handles the runtime fallback, so writing the
+// derived path into the user's config would surprise them with an unexpected
+// diff. The extras source directory must still be created on disk.
+func TestExtrasInit_PreservesEmptyExtrasSource(t *testing.T) {
 	sb := testutil.NewSandbox(t)
 	defer sb.Cleanup()
 
@@ -983,14 +986,17 @@ func TestExtrasInit_BackfillsExtrasSource(t *testing.T) {
 	result := sb.RunCLI("extras", "init", "rules", "--target", rulesTarget, "-g")
 	result.AssertSuccess(t)
 
-	// Verify extras_source was backfilled
+	// Verify extras_source was NOT silently backfilled.
 	configAfter := sb.ReadFile(sb.ConfigPath)
-	if !strings.Contains(configAfter, "extras_source:") {
-		t.Errorf("expected extras_source to be backfilled after extras init, got:\n%s", configAfter)
+	if strings.Contains(configAfter, "extras_source:") {
+		t.Errorf("expected no extras_source backfill, got:\n%s", configAfter)
 	}
-	expected := filepath.Join(filepath.Dir(sb.SourcePath), "extras")
-	if !strings.Contains(configAfter, expected) {
-		t.Errorf("expected extras_source %s, got:\n%s", expected, configAfter)
+
+	// But the derived extras source directory must still exist on disk so
+	// the new extra has somewhere to live.
+	expected := filepath.Join(filepath.Dir(sb.SourcePath), "extras", "rules")
+	if _, err := os.Stat(expected); err != nil {
+		t.Errorf("expected extras source directory %s to exist: %v", expected, err)
 	}
 }
 

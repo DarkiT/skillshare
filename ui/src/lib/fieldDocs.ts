@@ -24,22 +24,22 @@ export const fieldDocs: Record<string, FieldDoc> = {
     example: 'extras_source: ~/.config/skillshare/extras',
   },
   sources: {
-    description: 'Project-mode custom source directories. Each key (skills, agents, extras) overrides the default .skillshare/<type>/ path. All keys are optional — omit any key to fall back to the default.',
+    description: 'Custom source directories. Each key (skills, agents, extras) overrides the default source path. All keys are optional. Project mode falls back to .skillshare/<type>/; global mode falls back to <base>/<type>/ (or the legacy source / agents_source / extras_source field if present).',
     type: 'object',
     example: 'sources:\n  skills: ./docs/skills\n  agents: ./docs/agents\n  extras: ./docs/extras',
   },
   'sources.skills': {
-    description: 'Custom skills source directory for project mode. Relative paths resolve from the project root; absolute paths and ~ are supported. Default: .skillshare/skills/. Sync rejects configs where this aliases or nests with a target path.',
+    description: 'Custom skills source directory. Relative paths resolve from the project root (project mode); absolute paths and ~ are supported (both modes). Project mode default: .skillshare/skills/. Global mode default: <base>/skills/ (or the legacy `source` field). Project-mode sync rejects configs where this aliases or nests with a target path.',
     type: 'string',
     example: 'sources:\n  skills: ./docs/skills',
   },
   'sources.agents': {
-    description: 'Custom agents source directory for project mode. Relative paths resolve from the project root. Default: .skillshare/agents/.',
+    description: 'Custom agents source directory. Relative paths resolve from the project root (project mode). Project mode default: .skillshare/agents/. Global mode default: <base>/agents/ (or the legacy `agents_source` field).',
     type: 'string',
     example: 'sources:\n  agents: ./docs/agents',
   },
   'sources.extras': {
-    description: 'Custom extras source directory for project mode. Relative paths resolve from the project root. Default: .skillshare/extras/.',
+    description: 'Custom extras source directory. Relative paths resolve from the project root (project mode). Project mode default: .skillshare/extras/. Global mode default: the `extras` sibling of the skills source (or the legacy `extras_source` field).',
     type: 'string',
     example: 'sources:\n  extras: ./docs/extras',
   },

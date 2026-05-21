@@ -349,9 +349,12 @@ func TestHandleExtras_ProjectMode_DefaultSourceType(t *testing.T) {
 	}
 }
 
-// TestHandleExtrasCreate_BackfillsExtrasSource verifies that POST /api/extras
-// auto-populates extras_source in config when it's missing.
-func TestHandleExtrasCreate_BackfillsExtrasSource(t *testing.T) {
+// TestHandleExtrasCreate_PreservesEmptyExtrasSource verifies that POST /api/extras
+// does NOT silently write the legacy extras_source field when the user has
+// not explicitly set it. The runtime fallback is provided by
+// Config.EffectiveExtrasSource(), so backfilling on save would surprise
+// users with an unexpected diff in their config.yaml.
+func TestHandleExtrasCreate_PreservesEmptyExtrasSource(t *testing.T) {
 	// Create server with NO extras_source set
 	s, sourceDir := newTestServerWithExtras(t, nil, "")
 
@@ -371,13 +374,21 @@ func TestHandleExtrasCreate_BackfillsExtrasSource(t *testing.T) {
 		t.Fatalf("expected 200, got %d: %s", rr.Code, rr.Body.String())
 	}
 
-	// Reload config from disk and verify extras_source was backfilled
+	// Reload config from disk and verify extras_source is still empty —
+	// no silent backfill — and that EffectiveExtrasSource() resolves to
+	// the derived default.
 	cfg, err := config.Load()
 	if err != nil {
 		t.Fatalf("failed to reload config: %v", err)
 	}
+	if cfg.ExtrasSource != "" {
+		t.Errorf("expected empty ExtrasSource (no silent backfill), got %q", cfg.ExtrasSource)
+	}
+	if cfg.Sources.Extras != "" {
+		t.Errorf("expected empty Sources.Extras (no silent backfill), got %q", cfg.Sources.Extras)
+	}
 	expected := config.ExtrasParentDir(sourceDir)
-	if cfg.ExtrasSource != expected {
-		t.Errorf("expected ExtrasSource %q, got %q", expected, cfg.ExtrasSource)
+	if got := cfg.EffectiveExtrasSource(); got != expected {
+		t.Errorf("expected EffectiveExtrasSource %q (derived), got %q", expected, got)
 	}
 }

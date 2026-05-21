@@ -182,7 +182,7 @@ func cmdUpdate(args []string) error {
 	if opts.threshold == "" {
 		opts.threshold = cfg.Audit.BlockThreshold
 	}
-	sourcePath := utils.ResolveSymlink(cfg.Source)
+	sourcePath := utils.ResolveSymlink(cfg.EffectiveSkillsSource())
 
 	// In JSON mode, redirect all UI output to stderr early so the
 	// header, step, spinner, and handler output don't corrupt stdout.
@@ -199,7 +199,7 @@ func cmdUpdate(args []string) error {
 	}
 
 	ui.Header(ui.WithModeLabel("Updating"))
-	ui.StepStart("Source", cfg.Source)
+	ui.StepStart("Source", cfg.EffectiveSkillsSource())
 
 	// --- Resolve targets ---
 	var targets []updateTarget

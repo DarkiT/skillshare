@@ -126,11 +126,6 @@ func extrasInitGlobal(name string, targets []string, syncMode string, sourceOver
 		return err
 	}
 
-	// Backfill extras_source if not set
-	if cfg.ExtrasSource == "" {
-		cfg.ExtrasSource = config.ExtrasParentDir(cfg.Source)
-	}
-
 	// Build extra config
 	extra := config.ExtraConfig{Name: name, Source: sourceOverride}
 	for _, t := range targets {
@@ -142,7 +137,7 @@ func extrasInitGlobal(name string, targets []string, syncMode string, sourceOver
 	}
 
 	// Create source directory
-	sourceDir := config.ResolveExtrasSourceDir(extra, cfg.ExtrasSource, cfg.Source)
+	sourceDir := config.ResolveExtrasSourceDir(extra, cfg.EffectiveExtrasSource(), cfg.EffectiveSkillsSource())
 	if err := os.MkdirAll(sourceDir, 0755); err != nil {
 		return fmt.Errorf("failed to create extras source directory: %w", err)
 	}

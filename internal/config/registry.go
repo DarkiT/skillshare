@@ -13,7 +13,7 @@ const registryFileName = "registry.yaml"
 
 // SourceRoot returns the git repo root for the given source path.
 // Walks up from source to find .git/ directory. If none found,
-// returns source as-is. Handles --subdir where cfg.Source includes
+// returns source as-is. Handles --subdir where cfg.EffectiveSkillsSource() includes
 // a subdirectory within the git repo.
 func SourceRoot(source string) string {
 	dir := source

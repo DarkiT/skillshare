@@ -321,7 +321,7 @@ func resolveSourceDir(mode runMode, cwd string, kind resourceKindFilter) (string
 	if err != nil {
 		return "", fmt.Errorf("failed to load config: %w", err)
 	}
-	return cfg.Source, nil
+	return cfg.EffectiveSkillsSource(), nil
 }
 
 // formatAge is an alias for the shared formatDurationShort.

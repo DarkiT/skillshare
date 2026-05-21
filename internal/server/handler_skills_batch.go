@@ -61,7 +61,7 @@ func (s *Server) handleBatchSetTargets(w http.ResponseWriter, r *http.Request) {
 
 	// Snapshot config under read lock, then discover without holding the lock.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	s.mu.RUnlock()
 
 	discovered, err := ssync.DiscoverSourceSkillsAll(source)
@@ -118,7 +118,7 @@ func (s *Server) handleBatchSetTargets(w http.ResponseWriter, r *http.Request) {
 		s.skillsStore.RefreshHashes(sk.name, sk.path)
 	}
 	if len(updatedSkills) > 0 {
-		s.skillsStore.Save(s.cfg.Source) //nolint:errcheck
+		s.skillsStore.Save(s.cfg.EffectiveSkillsSource()) //nolint:errcheck
 	}
 
 	s.writeOpsLog("batch-set-targets", "ok", start, map[string]any{
@@ -157,7 +157,7 @@ func (s *Server) handleSetSkillTargets(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	s.mu.RUnlock()
 
 	discovered, err := ssync.DiscoverSourceSkillsAll(source)
@@ -193,7 +193,7 @@ func (s *Server) handleSetSkillTargets(w http.ResponseWriter, r *http.Request) {
 		}
 
 		s.skillsStore.RefreshHashes(d.RelPath, d.SourcePath)
-		s.skillsStore.Save(s.cfg.Source) //nolint:errcheck
+		s.skillsStore.Save(s.cfg.EffectiveSkillsSource()) //nolint:errcheck
 
 		s.writeOpsLog("set-skill-targets", "ok", start, map[string]any{
 			"name":   name,

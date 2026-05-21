@@ -601,7 +601,7 @@ func cmdList(args []string) error {
 		loadFn := func() listLoadResult {
 			// Always load both skills and agents — tab UI filters the view.
 			var allEntries []skillEntry
-			discovered, discErr := sync.DiscoverSourceSkillsAll(cfg.Source)
+			discovered, discErr := sync.DiscoverSourceSkillsAll(cfg.EffectiveSkillsSource())
 			if discErr != nil {
 				return listLoadResult{err: fmt.Errorf("cannot discover skills: %w", discErr)}
 			}
@@ -615,7 +615,7 @@ func cmdList(args []string) error {
 			sortSkillEntries(allEntries, opts.SortBy)
 			return listLoadResult{skills: toSkillItems(allEntries), totalCount: total}
 		}
-		action, skillName, skillKind, err := runListTUI(loadFn, "global", cfg.Source, cfg.EffectiveAgentsSource(), cfg.Targets, kind)
+		action, skillName, skillKind, err := runListTUI(loadFn, "global", cfg.EffectiveSkillsSource(), cfg.EffectiveAgentsSource(), cfg.Targets, kind)
 		if err != nil {
 			return err
 		}
@@ -665,7 +665,7 @@ func cmdList(args []string) error {
 
 	if kind.IncludesSkills() {
 		var discErr error
-		discoveredSkills, discErr = sync.DiscoverSourceSkillsAll(cfg.Source)
+		discoveredSkills, discErr = sync.DiscoverSourceSkillsAll(cfg.EffectiveSkillsSource())
 		if discErr != nil {
 			if sp != nil {
 				sp.Fail("Discovery failed")
@@ -739,7 +739,7 @@ func cmdList(args []string) error {
 
 	// Hide tracked repos section when filter/pattern is active
 	if len(trackedRepos) > 0 && !hasFilter {
-		displayTrackedRepos(trackedRepos, discoveredSkills, cfg.Source)
+		displayTrackedRepos(trackedRepos, discoveredSkills, cfg.EffectiveSkillsSource())
 	}
 
 	// Show match stats when filter is active

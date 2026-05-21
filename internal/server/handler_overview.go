@@ -23,9 +23,9 @@ type trackedRepoItem struct {
 func (s *Server) handleOverview(w http.ResponseWriter, r *http.Request) {
 	// Snapshot config under RLock, then release before I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	agentsSource := s.agentsSource()
-	extrasSource := s.cfg.ExtrasSource
+	extrasSource := s.cfg.EffectiveExtrasSource()
 	if s.IsProjectMode() {
 		extrasSource = filepath.Join(s.projectRoot, ".skillshare", "extras")
 	}

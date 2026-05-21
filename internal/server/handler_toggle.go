@@ -30,7 +30,7 @@ func (s *Server) handleToggleSkill(w http.ResponseWriter, r *http.Request, enabl
 
 	// Resolve under RLock — discovery is I/O-heavy, don't hold write lock
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	agentsSource := s.agentsSource()
 	s.mu.RUnlock()
 

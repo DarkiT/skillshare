@@ -235,7 +235,7 @@ func resolveSourcePath(mode runMode, cwd string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to load config: %w", err)
 	}
-	return cfg.Source, nil
+	return cfg.EffectiveSkillsSource(), nil
 }
 
 func printHubHelp() {

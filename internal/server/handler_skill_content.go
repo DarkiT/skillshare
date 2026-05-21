@@ -35,7 +35,7 @@ func (s *Server) handlePutSkillContent(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	agentsSource := s.agentsSource()
 	s.mu.RUnlock()
 
@@ -123,7 +123,7 @@ func (s *Server) handlePatchSkillSource(w http.ResponseWriter, r *http.Request) 
 		newRepoURL = parsed.CloneURL
 	}
 
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	agentsSource := s.agentsSource()
 
 	m := s.findMetadataEntry(name, kind, source, agentsSource)

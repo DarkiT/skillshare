@@ -31,7 +31,7 @@ func (s *Server) handleUpdateStream(w http.ResponseWriter, r *http.Request) {
 
 	// Snapshot source under RLock, then release before slow I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	s.mu.RUnlock()
 
 	// Collect items to update based on "names" query param.

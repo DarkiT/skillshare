@@ -72,7 +72,7 @@ func cmdSyncExtrasGlobal(dryRun, force, jsonOutput bool, start time.Time) error 
 
 	if len(cfg.Extras) == 0 {
 		// Clean up empty extras directory
-		removeEmptyDir(config.ExtrasParentDir(cfg.Source))
+		removeEmptyDir(config.ExtrasParentDir(cfg.EffectiveSkillsSource()))
 
 		if jsonOutput {
 			return writeJSON(&syncExtrasJSONOutput{Extras: []syncExtrasJSONEntry{}, Duration: formatDuration(start)})
@@ -90,7 +90,7 @@ func cmdSyncExtrasGlobal(dryRun, force, jsonOutput bool, start time.Time) error 
 		return nil
 	}
 
-	configDir := filepath.Dir(cfg.Source)
+	configDir := filepath.Dir(cfg.EffectiveSkillsSource())
 
 	// Auto-migrate legacy extras directories (flat → extras/<name>/)
 	if warnings := config.MigrateExtrasDir(configDir, cfg.Extras); len(warnings) > 0 {
@@ -120,7 +120,7 @@ func cmdSyncExtrasGlobal(dryRun, force, jsonOutput bool, start time.Time) error 
 	}
 
 	for _, extra := range cfg.Extras {
-		extraSource := config.ResolveExtrasSourceDir(extra, cfg.ExtrasSource, cfg.Source)
+		extraSource := config.ResolveExtrasSourceDir(extra, cfg.EffectiveExtrasSource(), cfg.EffectiveSkillsSource())
 
 		// Auto-create source directory if it doesn't exist
 		if _, statErr := os.Stat(extraSource); os.IsNotExist(statErr) {

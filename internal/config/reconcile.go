@@ -11,7 +11,7 @@ import (
 // skills (those with install metadata or tracked repos) and ensures they are
 // present in the MetadataStore.
 func ReconcileGlobalSkills(cfg *Config, store *install.MetadataStore) error {
-	sourcePath := cfg.Source
+	sourcePath := cfg.EffectiveSkillsSource()
 	if _, err := os.Stat(sourcePath); os.IsNotExist(err) {
 		return nil
 	}

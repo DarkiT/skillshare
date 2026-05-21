@@ -237,8 +237,8 @@ func upgradeSkillshareSkill(dryRun, force bool) error {
 		return fmt.Errorf("config not found: run 'skillshare init' first")
 	}
 
-	skillshareSkillDir := filepath.Join(cfg.Source, "skillshare")
-	localVersion := versionpkg.ReadLocalSkillVersion(cfg.Source)
+	skillshareSkillDir := filepath.Join(cfg.EffectiveSkillsSource(), "skillshare")
+	localVersion := versionpkg.ReadLocalSkillVersion(cfg.EffectiveSkillsSource())
 
 	// Skill not installed
 	if localVersion == "" {
@@ -249,7 +249,7 @@ func upgradeSkillshareSkill(dryRun, force bool) error {
 				ui.StepEnd("Action", "Would download")
 				return nil
 			}
-			return doSkillDownload(skillshareSkillDir, cfg.Source, "")
+			return doSkillDownload(skillshareSkillDir, cfg.EffectiveSkillsSource(), "")
 		}
 
 		if dryRun {
@@ -269,7 +269,7 @@ func upgradeSkillshareSkill(dryRun, force bool) error {
 			return nil
 		}
 
-		return doSkillDownload(skillshareSkillDir, cfg.Source, "")
+		return doSkillDownload(skillshareSkillDir, cfg.EffectiveSkillsSource(), "")
 	}
 
 	// Skill installed — compare versions
@@ -280,7 +280,7 @@ func upgradeSkillshareSkill(dryRun, force bool) error {
 			ui.StepEnd("Action", "Would re-download (forced)")
 			return nil
 		}
-		return doSkillDownload(skillshareSkillDir, cfg.Source, localVersion)
+		return doSkillDownload(skillshareSkillDir, cfg.EffectiveSkillsSource(), localVersion)
 	}
 
 	treeSpinner := ui.StartTreeSpinner("Checking latest version...", false)
@@ -301,7 +301,7 @@ func upgradeSkillshareSkill(dryRun, force bool) error {
 		return nil
 	}
 
-	return doSkillDownload(skillshareSkillDir, cfg.Source, localVersion)
+	return doSkillDownload(skillshareSkillDir, cfg.EffectiveSkillsSource(), localVersion)
 }
 
 func doSkillDownload(skillshareSkillDir, sourceDir, fromVersion string) error {

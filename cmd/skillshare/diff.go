@@ -377,7 +377,7 @@ func cmdDiffGlobal(targetName string, kind resourceKindFilter, opts diffRenderOp
 	if !opts.jsonOutput {
 		spinner = ui.StartSpinner("Discovering skills")
 	}
-	discovered, discoverErr := sync.DiscoverSourceSkills(cfg.Source)
+	discovered, discoverErr := sync.DiscoverSourceSkills(cfg.EffectiveSkillsSource())
 	if discoverErr != nil {
 		if spinner != nil {
 			spinner.Fail("Discovery failed")
@@ -460,7 +460,7 @@ func cmdDiffGlobal(targetName string, kind resourceKindFilter, opts diffRenderOp
 			defer wg.Done()
 			defer func() { <-sem }()
 			progress.startTarget(fe.name)
-			r := collectTargetDiff(fe.name, fe.target, cfg.Source, fe.mode, fe.filtered, progress)
+			r := collectTargetDiff(fe.name, fe.target, cfg.EffectiveSkillsSource(), fe.mode, fe.filtered, progress)
 			progress.doneTarget(fe.name, r)
 			results[idx] = r
 		}(i, fe)
@@ -475,7 +475,7 @@ func cmdDiffGlobal(targetName string, kind resourceKindFilter, opts diffRenderOp
 	var extrasResults []extraDiffResult
 	if len(cfg.Extras) > 0 {
 		extrasResults = collectExtrasDiff(cfg.Extras, func(extra config.ExtraConfig) string {
-			return config.ResolveExtrasSourceDir(extra, cfg.ExtrasSource, cfg.Source)
+			return config.ResolveExtrasSourceDir(extra, cfg.EffectiveExtrasSource(), cfg.EffectiveSkillsSource())
 		})
 	}
 

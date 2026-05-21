@@ -52,12 +52,11 @@ func cmdExtrasSource(args []string) error {
 
 	// No argument → show current value
 	if newPath == "" {
-		current := cfg.ExtrasSource
-		if current == "" {
-			current = config.ExtrasParentDir(cfg.Source)
-			ui.Info("extras_source: %s (default)", shortenPath(current))
+		effective := cfg.EffectiveExtrasSource()
+		if cfg.Sources.Extras == "" && cfg.ExtrasSource == "" {
+			ui.Info("extras_source: %s (default)", shortenPath(effective))
 		} else {
-			ui.Info("extras_source: %s", shortenPath(current))
+			ui.Info("extras_source: %s", shortenPath(effective))
 		}
 		return nil
 	}
@@ -68,7 +67,14 @@ func cmdExtrasSource(args []string) error {
 		return fmt.Errorf("invalid path: %w", err)
 	}
 
-	cfg.ExtrasSource = absPath
+	// Write to whichever field the user already uses; default to legacy field
+	// for fresh configs to preserve the existing on-disk shape. If the user
+	// has migrated to sources.extras, update that to avoid being shadowed.
+	if cfg.Sources.Extras != "" {
+		cfg.Sources.Extras = absPath
+	} else {
+		cfg.ExtrasSource = absPath
+	}
 	if err := cfg.Save(); err != nil {
 		return fmt.Errorf("failed to save config: %w", err)
 	}

@@ -35,7 +35,7 @@ func (s *Server) extrasSourceDir(extra config.ExtraConfig) string {
 	if s.IsProjectMode() {
 		return config.ExtrasSourceDirProject(s.projectCfg.EffectiveExtrasSource(s.projectRoot), extra.Name)
 	}
-	return config.ResolveExtrasSourceDir(extra, s.cfg.ExtrasSource, s.cfg.Source)
+	return config.ResolveExtrasSourceDir(extra, s.cfg.EffectiveExtrasSource(), s.cfg.EffectiveSkillsSource())
 }
 
 // extrasConfig returns the extras slice for the current mode.
@@ -52,8 +52,16 @@ func (s *Server) handleExtras(w http.ResponseWriter, r *http.Request) {
 	s.mu.RLock()
 	extras := s.extrasConfig()
 	projectRoot := s.projectRoot
-	source := s.cfg.Source
-	extrasSource := s.cfg.ExtrasSource
+	source := s.cfg.EffectiveSkillsSource()
+	extrasSource := s.cfg.EffectiveExtrasSource()
+	// rawExtrasSource is the user's explicit configuration value (either the
+	// legacy extras_source field or the new sources.extras field). It is empty
+	// only when the user did not configure either, so source_type can
+	// distinguish "default" (derived) from "extras_source" (user-configured).
+	rawExtrasSource := s.cfg.ExtrasSource
+	if rawExtrasSource == "" {
+		rawExtrasSource = s.cfg.Sources.Extras
+	}
 	var projectExtrasParent string
 	if s.IsProjectMode() {
 		projectExtrasParent = s.projectCfg.EffectiveExtrasSource(s.projectRoot)
@@ -65,7 +73,7 @@ func (s *Server) handleExtras(w http.ResponseWriter, r *http.Request) {
 	// Resolve the extras_source value for source_type resolution (global mode only).
 	resolvedExtrasSource := ""
 	if !isProjectMode {
-		resolvedExtrasSource = extrasSource
+		resolvedExtrasSource = rawExtrasSource
 	}
 
 	entries := make([]extrasListEntry, 0, len(extras))
@@ -139,8 +147,8 @@ func (s *Server) handleExtrasDiff(w http.ResponseWriter, r *http.Request) {
 	s.mu.RLock()
 	extras := s.extrasConfig()
 	projectRoot := s.projectRoot
-	source := s.cfg.Source
-	extrasSource := s.cfg.ExtrasSource
+	source := s.cfg.EffectiveSkillsSource()
+	extrasSource := s.cfg.EffectiveExtrasSource()
 	var projectExtrasParent string
 	if s.IsProjectMode() {
 		projectExtrasParent = s.projectCfg.EffectiveExtrasSource(s.projectRoot)
@@ -318,12 +326,8 @@ func (s *Server) handleExtrasCreate(w http.ResponseWriter, r *http.Request) {
 		extra.Targets = append(extra.Targets, et)
 	}
 
-	// Backfill extras_source if not set (global mode only)
-	if !s.IsProjectMode() && s.cfg.ExtrasSource == "" {
-		s.cfg.ExtrasSource = config.ExtrasParentDir(s.cfg.Source)
-	}
-
-	// Append to config
+	// Append to config (extras source resolution is handled by
+	// s.cfg.EffectiveExtrasSource() inside s.extrasSourceDir; no backfill needed).
 	if s.IsProjectMode() {
 		s.projectCfg.Extras = append(s.projectCfg.Extras, extra)
 	} else {
@@ -373,8 +377,8 @@ func (s *Server) handleExtrasSync(w http.ResponseWriter, r *http.Request) {
 	s.mu.RLock()
 	extras := s.extrasConfig()
 	projectRoot := s.projectRoot
-	source := s.cfg.Source
-	extrasSource := s.cfg.ExtrasSource
+	source := s.cfg.EffectiveSkillsSource()
+	extrasSource := s.cfg.EffectiveExtrasSource()
 	var projectExtrasParent string
 	if s.IsProjectMode() {
 		projectExtrasParent = s.projectCfg.EffectiveExtrasSource(s.projectRoot)

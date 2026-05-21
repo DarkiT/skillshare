@@ -139,7 +139,7 @@ func cmdDoctorGlobal(jsonMode bool) error {
 	}
 
 	runDoctorChecks(cfg, result, false)
-	checkExtras(cfg.Extras, result, false, cfg.Source, cfg.ExtrasSource, "", "")
+	checkExtras(cfg.Extras, result, false, cfg.EffectiveSkillsSource(), cfg.EffectiveExtrasSource(), "", "")
 	ui.Header("Storage")
 	checkBackupStatus(result, false, backup.BackupDir())
 	checkTrashStatus(result, trash.TrashDir())
@@ -216,7 +216,7 @@ func cmdDoctorProject(root string, jsonMode bool) error {
 func runDoctorChecks(cfg *config.Config, result *doctorResult, isProject bool) {
 	// Single discovery pass for all checks (with .skillignore stats)
 	sp := ui.StartSpinner("Discovering skills...")
-	discovered, stats, discoverErr := sync.DiscoverSourceSkillsWithStats(cfg.Source)
+	discovered, stats, discoverErr := sync.DiscoverSourceSkillsWithStats(cfg.EffectiveSkillsSource())
 	if discoverErr != nil {
 		discovered = nil
 	}
@@ -229,11 +229,11 @@ func runDoctorChecks(cfg *config.Config, result *doctorResult, isProject bool) {
 	checkTheme(result)
 
 	if !isProject {
-		checkGitStatus(cfg.Source, result)
+		checkGitStatus(cfg.EffectiveSkillsSource(), result)
 	}
 
 	fmt.Println() // visual break before skill validation
-	checkSkillsValidity(cfg.Source, result, discovered)
+	checkSkillsValidity(cfg.EffectiveSkillsSource(), result, discovered)
 	checkSkillIntegrity(result, discovered)
 	checkSkillTargetsField(result, discovered, targetNamesFromConfig(cfg.Targets))
 	targetCache := checkTargets(cfg, result, isProject)
@@ -278,18 +278,18 @@ func checkSkillignore(result *doctorResult, stats *skillignore.IgnoreStats) {
 }
 
 func checkSource(cfg *config.Config, result *doctorResult, discovered []sync.DiscoveredSkill, discoverErr error) {
-	info, err := os.Stat(cfg.Source)
+	info, err := os.Stat(cfg.EffectiveSkillsSource())
 	if err != nil {
-		ui.Error("Source not found: %s", cfg.Source)
+		ui.Error("Source not found: %s", cfg.EffectiveSkillsSource())
 		result.addError()
-		result.addCheck("source", checkError, fmt.Sprintf("Source not found: %s", cfg.Source), nil)
+		result.addCheck("source", checkError, fmt.Sprintf("Source not found: %s", cfg.EffectiveSkillsSource()), nil)
 		return
 	}
 
 	if !info.IsDir() {
-		ui.Error("Source is not a directory: %s", cfg.Source)
+		ui.Error("Source is not a directory: %s", cfg.EffectiveSkillsSource())
 		result.addError()
-		result.addCheck("source", checkError, fmt.Sprintf("Source is not a directory: %s", cfg.Source), nil)
+		result.addCheck("source", checkError, fmt.Sprintf("Source is not a directory: %s", cfg.EffectiveSkillsSource()), nil)
 		return
 	}
 
@@ -297,15 +297,15 @@ func checkSource(cfg *config.Config, result *doctorResult, discovered []sync.Dis
 	if discoverErr == nil {
 		skillCount = len(discovered)
 	} else {
-		entries, _ := os.ReadDir(cfg.Source)
+		entries, _ := os.ReadDir(cfg.EffectiveSkillsSource())
 		for _, e := range entries {
 			if e.IsDir() && !utils.IsHidden(e.Name()) {
 				skillCount++
 			}
 		}
 	}
-	ui.Success("Source: %s (%d skills)", cfg.Source, skillCount)
-	result.addCheck("source", checkPass, fmt.Sprintf("Source: %s (%d skills)", cfg.Source, skillCount), nil)
+	ui.Success("Source: %s (%d skills)", cfg.EffectiveSkillsSource(), skillCount)
+	result.addCheck("source", checkPass, fmt.Sprintf("Source: %s (%d skills)", cfg.EffectiveSkillsSource(), skillCount), nil)
 }
 
 func checkAgentsSource(cfg *config.Config, result *doctorResult) {
@@ -480,7 +480,7 @@ func checkTargets(cfg *config.Config, result *doctorResult, isProject bool) map[
 			result.addWarning()
 		}
 
-		targetIssues := checkTargetIssues(target, cfg.Source)
+		targetIssues := checkTargetIssues(target, cfg.EffectiveSkillsSource())
 
 		// Target name header
 		fmt.Printf("%s%s%s\n", ui.Bold, name, ui.Reset)
@@ -491,7 +491,7 @@ func checkTargets(cfg *config.Config, result *doctorResult, isProject bool) map[
 			details = append(details, fmt.Sprintf("%s: %s", name, strings.Join(targetIssues, ", ")))
 			hasError = true
 		} else {
-			cached := displayTargetStatus(target, cfg.Source, mode)
+			cached := displayTargetStatus(target, cfg.EffectiveSkillsSource(), mode)
 			cache[name] = cached
 		}
 
@@ -1213,17 +1213,17 @@ func checkVersionDoctor(cfg *config.Config, result *doctorResult, isProject bool
 	result.addCheck("cli_version", checkPass, fmt.Sprintf("CLI: %s", version), nil)
 
 	// Skill version: try SKILL.md frontmatter first, then metadata store
-	localVersion := versioncheck.ReadLocalSkillVersion(cfg.Source)
+	localVersion := versioncheck.ReadLocalSkillVersion(cfg.EffectiveSkillsSource())
 	if localVersion == "" {
 		// Try metadata store (tracks installed version even without metadata.version in SKILL.md)
-		store := install.LoadMetadataOrNew(cfg.Source)
+		store := install.LoadMetadataOrNew(cfg.EffectiveSkillsSource())
 		if entry := store.Get("skillshare"); entry != nil && entry.Version != "" {
 			localVersion = strings.TrimPrefix(entry.Version, "v")
 		}
 	}
 
 	if localVersion == "" {
-		skillFile := filepath.Join(cfg.Source, "skillshare", "SKILL.md")
+		skillFile := filepath.Join(cfg.EffectiveSkillsSource(), "skillshare", "SKILL.md")
 		if _, err := os.Stat(skillFile); os.IsNotExist(err) {
 			if isProject {
 				ui.Info("Skill: not installed")

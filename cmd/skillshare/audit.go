@@ -201,7 +201,7 @@ func cmdAudit(args []string) error {
 		if err != nil {
 			return err
 		}
-		sourcePath = cfg.Source
+		sourcePath = cfg.EffectiveSkillsSource()
 		agentsSourcePath = cfg.EffectiveAgentsSource()
 		defaultThreshold = cfg.Audit.BlockThreshold
 		configProfile = cfg.Audit.Profile

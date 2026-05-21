@@ -74,7 +74,7 @@ func removeExtraFromGlobalConfig(cfg *config.Config, name string) (string, error
 		return "", fmt.Errorf("extra %q not found in config", name)
 	}
 
-	sourceDir := config.ResolveExtrasSourceDir(removed, cfg.ExtrasSource, cfg.Source)
+	sourceDir := config.ResolveExtrasSourceDir(removed, cfg.EffectiveExtrasSource(), cfg.EffectiveSkillsSource())
 
 	cfg.Extras = append(cfg.Extras[:idx], cfg.Extras[idx+1:]...)
 	if err := cfg.Save(); err != nil {
@@ -126,7 +126,7 @@ func extrasRemoveGlobal(name string, force bool, start time.Time) error {
 	if idx == -1 {
 		return fmt.Errorf("extra %q not found in config", name)
 	}
-	sourceDir := config.ResolveExtrasSourceDir(found, cfg.ExtrasSource, cfg.Source)
+	sourceDir := config.ResolveExtrasSourceDir(found, cfg.EffectiveExtrasSource(), cfg.EffectiveSkillsSource())
 
 	if !force {
 		ui.Warning("This will remove %q from config.", name)

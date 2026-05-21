@@ -541,7 +541,7 @@ func installFromSearchResult(result search.SearchResult, cfg *config.Config) (er
 	}
 
 	// Determine destination
-	destPath := filepath.Join(cfg.Source, result.Name)
+	destPath := filepath.Join(cfg.EffectiveSkillsSource(), result.Name)
 
 	// Check if already exists
 	if _, err := os.Stat(destPath); err == nil {
@@ -581,7 +581,7 @@ func installFromSearchResult(result search.SearchResult, cfg *config.Config) (er
 	logSummary.InstalledSkills = []string{result.Name}
 
 	// Reconcile global config with installed skills
-	store, _ := install.LoadMetadataWithMigration(cfg.Source, "")
+	store, _ := install.LoadMetadataWithMigration(cfg.EffectiveSkillsSource(), "")
 	if store == nil {
 		store = install.NewMetadataStore()
 	}

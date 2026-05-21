@@ -26,7 +26,7 @@ type gitStatusResponse struct {
 func (s *Server) handleGitStatus(w http.ResponseWriter, r *http.Request) {
 	// Snapshot config under RLock, then release before I/O.
 	s.mu.RLock()
-	src := s.cfg.Source
+	src := s.cfg.EffectiveSkillsSource()
 	s.mu.RUnlock()
 	resp := gitStatusResponse{
 		SourceDir: src,
@@ -85,7 +85,7 @@ type gitBranchesResponse struct {
 func (s *Server) handleGitBranches(w http.ResponseWriter, r *http.Request) {
 	// Snapshot config under RLock, then release before I/O.
 	s.mu.RLock()
-	src := s.cfg.Source
+	src := s.cfg.EffectiveSkillsSource()
 	s.mu.RUnlock()
 
 	if !git.IsRepo(src) {
@@ -155,7 +155,7 @@ func (s *Server) handleGitCheckout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	src := s.cfg.Source
+	src := s.cfg.EffectiveSkillsSource()
 
 	if !git.IsRepo(src) {
 		writeError(w, http.StatusBadRequest, "source directory is not a git repository")
@@ -231,7 +231,7 @@ func (s *Server) handlePush(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	src := s.cfg.Source
+	src := s.cfg.EffectiveSkillsSource()
 
 	if !git.IsRepo(src) {
 		writeError(w, http.StatusBadRequest, "source directory is not a git repository")
@@ -320,7 +320,7 @@ func (s *Server) handlePull(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewDecoder(r.Body).Decode(&body)
 
-	src := s.cfg.Source
+	src := s.cfg.EffectiveSkillsSource()
 
 	if !git.IsRepo(src) {
 		writeError(w, http.StatusBadRequest, "source directory is not a git repository")

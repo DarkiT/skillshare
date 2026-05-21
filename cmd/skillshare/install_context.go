@@ -41,7 +41,7 @@ type globalInstallContext struct {
 	store *install.MetadataStore
 }
 
-func (g *globalInstallContext) SourcePath() string { return g.cfg.Source }
+func (g *globalInstallContext) SourcePath() string { return g.cfg.EffectiveSkillsSource() }
 func (g *globalInstallContext) ConfigSkills() []install.SkillEntryDTO {
 	return storeToSkillEntryDTOs(g.store)
 }

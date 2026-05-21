@@ -144,7 +144,7 @@ func (s *Server) handleBatchUninstallAgents(w http.ResponseWriter, body batchUni
 }
 
 func (s *Server) handleBatchUninstallSkills(w http.ResponseWriter, body batchUninstallRequest, start time.Time) {
-	discovered, err := sync.DiscoverSourceSkills(s.cfg.Source)
+	discovered, err := sync.DiscoverSourceSkills(s.cfg.EffectiveSkillsSource())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to discover skills: "+err.Error())
 		return
@@ -167,7 +167,7 @@ func (s *Server) handleBatchUninstallSkills(w http.ResponseWriter, body batchUni
 		res := batchUninstallItemResult{Name: name, Kind: "skill"}
 
 		if strings.HasPrefix(name, "_") {
-			repoPath := filepath.Join(s.cfg.Source, name)
+			repoPath := filepath.Join(s.cfg.EffectiveSkillsSource(), name)
 			if !install.IsGitRepo(repoPath) {
 				res.Success = false
 				res.Error = "not a tracked repository: " + name
@@ -303,13 +303,13 @@ func (s *Server) handleBatchUninstallSkills(w http.ResponseWriter, body batchUni
 			}
 		}
 
-		if err := s.skillsStore.Save(s.cfg.Source); err != nil {
+		if err := s.skillsStore.Save(s.cfg.EffectiveSkillsSource()); err != nil {
 			log.Printf("warning: failed to save metadata: %v", err)
 		}
 
 		if s.IsProjectMode() {
 			if rErr := config.ReconcileProjectSkills(
-				s.projectRoot, s.projectCfg, s.skillsStore, s.cfg.Source); rErr != nil {
+				s.projectRoot, s.projectCfg, s.skillsStore, s.cfg.EffectiveSkillsSource()); rErr != nil {
 				log.Printf("warning: failed to reconcile project skills config: %v", rErr)
 			}
 		} else {

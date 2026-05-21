@@ -280,7 +280,7 @@ func (s *Server) resolveAuditSource(r *http.Request) (string, string, bool) {
 	if kind == "agents" {
 		return s.agentsSource(), "agent", true
 	}
-	return s.cfg.Source, "skill", false
+	return s.cfg.EffectiveSkillsSource(), "skill", false
 }
 
 func (s *Server) handleAuditAll(w http.ResponseWriter, r *http.Request) {
@@ -338,7 +338,7 @@ func (s *Server) handleAuditAll(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleAuditSkill(w http.ResponseWriter, r *http.Request) {
 	// Snapshot config under RLock, then release before I/O.
 	s.mu.RLock()
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	agentsSource := s.agentsSource()
 	policy := s.auditPolicy()
 	projectRoot := s.projectRoot

@@ -265,7 +265,7 @@ func parseOptsFromProjectConfig(cfg *config.ProjectConfig) install.ParseOptions 
 
 // resolveSkillFromName resolves a skill name to source using metadata
 func resolveSkillFromName(skillName string, cfg *config.Config) (*install.Source, error) {
-	store, err := install.LoadMetadataWithMigration(cfg.Source, "")
+	store, err := install.LoadMetadataWithMigration(cfg.EffectiveSkillsSource(), "")
 	if err != nil {
 		return nil, fmt.Errorf("skill '%s' not found or has no metadata", skillName)
 	}
@@ -426,7 +426,7 @@ func cmdInstall(args []string) error {
 		return err
 	}
 
-	parsed.opts.SourceDir = cfg.Source
+	parsed.opts.SourceDir = cfg.EffectiveSkillsSource()
 	source, resolvedFromMeta, err := resolveInstallSource(parsed.sourceArg, parsed.opts, cfg)
 	if err == nil && parsed.opts.Branch != "" {
 		source.Branch = parsed.opts.Branch
@@ -463,7 +463,7 @@ func cmdInstall(args []string) error {
 			summary.Source = parsed.sourceArg
 		}
 		if err == nil && !parsed.opts.DryRun && len(summary.InstalledSkills) > 0 {
-			store, storeErr := install.LoadMetadataWithMigration(cfg.Source, "")
+			store, storeErr := install.LoadMetadataWithMigration(cfg.EffectiveSkillsSource(), "")
 			if storeErr != nil {
 				ui.Warning("Failed to load metadata: %v", storeErr)
 			} else if rErr := config.ReconcileGlobalSkills(cfg, store); rErr != nil {
@@ -485,7 +485,7 @@ func cmdInstall(args []string) error {
 		summary.Source = parsed.sourceArg
 	}
 	if err == nil && !parsed.opts.DryRun && len(summary.InstalledSkills) > 0 {
-		store, storeErr := install.LoadMetadataWithMigration(cfg.Source, "")
+		store, storeErr := install.LoadMetadataWithMigration(cfg.EffectiveSkillsSource(), "")
 		if storeErr != nil {
 			ui.Warning("Failed to load metadata: %v", storeErr)
 		} else if rErr := config.ReconcileGlobalSkills(cfg, store); rErr != nil {

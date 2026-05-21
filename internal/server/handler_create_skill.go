@@ -64,7 +64,7 @@ func (s *Server) handleCreateSkill(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	source := s.cfg.Source
+	source := s.cfg.EffectiveSkillsSource()
 	skillDir := filepath.Join(source, req.Name)
 
 	// Check if skill already exists

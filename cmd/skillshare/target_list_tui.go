@@ -212,7 +212,7 @@ func buildTargetTUIItems(isProject bool, cwd string) ([]targetTUIItem, error) {
 				name:         name,
 				target:       t,
 				displayPath:  t.SkillsConfig().Path,
-				skillSync:    buildTargetSkillSyncSummary(t.SkillsConfig().Path, cfg.Source, t.SkillsConfig().Mode),
+				skillSync:    buildTargetSkillSyncSummary(t.SkillsConfig().Path, cfg.EffectiveSkillsSource(), t.SkillsConfig().Mode),
 				agentConfig:  config.ResourceTargetConfig{Mode: agentSummaryMode(agentSummary), Include: agentSummaryInclude(agentSummary), Exclude: agentSummaryExclude(agentSummary)},
 				agentSummary: agentSummary,
 			})

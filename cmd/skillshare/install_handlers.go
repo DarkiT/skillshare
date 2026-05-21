@@ -22,7 +22,7 @@ func handleTrackedRepoInstall(source *install.Source, cfg *config.Config, opts i
 	}
 	opts.Kind = trackedKind
 
-	trackSourceDir := cfg.Source
+	trackSourceDir := cfg.EffectiveSkillsSource()
 	if trackedKind == "agent" {
 		trackSourceDir = cfg.EffectiveAgentsSource()
 	}
@@ -180,7 +180,7 @@ func handleGitInstall(source *install.Source, cfg *config.Config, opts install.I
 	// Cross-path duplicate detection: block if same repo is already installed
 	// at a different location (e.g. user forgot they used --into before).
 	if !opts.Force && source.CloneURL != "" {
-		if err := install.CheckCrossPathDuplicate(cfg.Source, source.CloneURL, opts.Into); err != nil {
+		if err := install.CheckCrossPathDuplicate(cfg.EffectiveSkillsSource(), source.CloneURL, opts.Into); err != nil {
 			return logSummary, err
 		}
 	}
@@ -203,8 +203,8 @@ func handleGitInstall(source *install.Source, cfg *config.Config, opts install.I
 
 		renderSkillMeta(skill, displayPath)
 
-		destPath := destWithInto(cfg.Source, opts, skill.Name)
-		if err := ensureIntoDirExists(cfg.Source, opts); err != nil {
+		destPath := destWithInto(cfg.EffectiveSkillsSource(), opts, skill.Name)
+		if err := ensureIntoDirExists(cfg.EffectiveSkillsSource(), opts); err != nil {
 			return logSummary, fmt.Errorf("failed to create --into directory: %w", err)
 		}
 
@@ -296,8 +296,8 @@ func handleGitInstall(source *install.Source, cfg *config.Config, opts install.I
 
 		renderSkillMeta(skill, displayPath)
 
-		destPath := destWithInto(cfg.Source, opts, skill.Name)
-		if err := ensureIntoDirExists(cfg.Source, opts); err != nil {
+		destPath := destWithInto(cfg.EffectiveSkillsSource(), opts, skill.Name)
+		if err := ensureIntoDirExists(cfg.EffectiveSkillsSource(), opts); err != nil {
 			return logSummary, fmt.Errorf("failed to create --into directory: %w", err)
 		}
 		fmt.Println()
@@ -417,7 +417,7 @@ func installSelectedSkills(selected []install.SkillInfo, discovery *install.Disc
 
 	// Ensure Into directory exists for batch installs
 	if opts.Into != "" {
-		if err := ensureIntoDirExists(cfg.Source, opts); err != nil {
+		if err := ensureIntoDirExists(cfg.EffectiveSkillsSource(), opts); err != nil {
 			if installSpinner != nil {
 				installSpinner.Fail("Failed to create --into directory")
 			}
@@ -444,7 +444,7 @@ func installSelectedSkills(selected []install.SkillInfo, discovery *install.Disc
 		// at the top level (or under --into if specified). Root orchestrator
 		// skills (Path=".") get only their SKILL.md copied (handled in
 		// install_apply.go), so no nesting is needed.
-		destPath := destWithInto(cfg.Source, opts, skill.Name)
+		destPath := destWithInto(cfg.EffectiveSkillsSource(), opts, skill.Name)
 		skillOpts := opts
 
 		installResult, err := install.InstallFromDiscovery(discovery, skill, destPath, skillOpts)
@@ -806,16 +806,16 @@ func handleDirectInstall(source *install.Source, cfg *config.Config, opts instal
 	source.Name = skillName
 
 	// Determine destination path
-	destPath := destWithInto(cfg.Source, opts, skillName)
+	destPath := destWithInto(cfg.EffectiveSkillsSource(), opts, skillName)
 
 	// Ensure Into directory exists
-	if err := ensureIntoDirExists(cfg.Source, opts); err != nil {
+	if err := ensureIntoDirExists(cfg.EffectiveSkillsSource(), opts); err != nil {
 		return logSummary, fmt.Errorf("failed to create --into directory: %w", err)
 	}
 
 	// Cross-path duplicate detection (same as handleGitInstall)
 	if !opts.Force && source.CloneURL != "" {
-		if err := install.CheckCrossPathDuplicate(cfg.Source, source.CloneURL, opts.Into); err != nil {
+		if err := install.CheckCrossPathDuplicate(cfg.EffectiveSkillsSource(), source.CloneURL, opts.Into); err != nil {
 			return logSummary, err
 		}
 	}
@@ -892,7 +892,7 @@ func installFromGlobalConfig(cfg *config.Config, opts install.InstallOptions) (i
 		AuditVerbose: opts.AuditVerbose,
 	}
 
-	store, storeErr := install.LoadMetadataWithMigration(cfg.Source, "")
+	store, storeErr := install.LoadMetadataWithMigration(cfg.EffectiveSkillsSource(), "")
 	if storeErr != nil {
 		return summary, fmt.Errorf("failed to load metadata: %w", storeErr)
 	}

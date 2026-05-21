@@ -227,11 +227,11 @@ func cmdPush(args []string) error {
 
 	spinner := ui.StartSpinner("Checking repository...")
 
-	if err := checkGitRepo(cfg.Source, spinner); err != nil {
+	if err := checkGitRepo(cfg.EffectiveSkillsSource(), spinner); err != nil {
 		return nil // Error already displayed
 	}
 
-	changes, err := getGitChanges(cfg.Source)
+	changes, err := getGitChanges(cfg.EffectiveSkillsSource())
 	if err != nil {
 		spinner.Fail("Failed to check git status")
 		return err
@@ -257,12 +257,12 @@ func cmdPush(args []string) error {
 	}
 
 	if hasChanges {
-		if err := stageAndCommit(cfg.Source, opts.message, spinner); err != nil {
+		if err := stageAndCommit(cfg.EffectiveSkillsSource(), opts.message, spinner); err != nil {
 			return err
 		}
 	}
 
-	if err := gitPush(cfg.Source, spinner); err != nil {
+	if err := gitPush(cfg.EffectiveSkillsSource(), spinner); err != nil {
 		return nil // Error already displayed
 	}
 

@@ -93,7 +93,7 @@ func cmdNew(args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to load config: %w (run 'skillshare init' first)", err)
 		}
-		sourceDir = cfg.Source
+		sourceDir = cfg.EffectiveSkillsSource()
 	}
 
 	// Create skill directory path

@@ -97,7 +97,7 @@ func cmdToggleSkill(args []string, enable bool) error {
 		if isAgent {
 			ignorePath = filepath.Join(cfg.EffectiveAgentsSource(), ".agentignore")
 		} else {
-			ignorePath = filepath.Join(cfg.Source, ".skillignore")
+			ignorePath = filepath.Join(cfg.EffectiveSkillsSource(), ".skillignore")
 		}
 		cfgPath = config.ConfigPath()
 	}

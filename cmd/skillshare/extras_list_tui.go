@@ -602,7 +602,7 @@ func (m *extrasListTUIModel) reloadExtras() {
 
 	extrasSource := ""
 	if m.cfg != nil {
-		extrasSource = m.cfg.ExtrasSource
+		extrasSource = m.cfg.EffectiveExtrasSource()
 	}
 	entries := buildExtrasListEntries(extras, extrasSource, m.sourceFunc)
 	m.allItems = entries

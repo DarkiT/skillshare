@@ -138,7 +138,7 @@ func (s *Server) updateSingleByKind(name, kind string, force, skipAudit bool) up
 		return s.updateAgent(name, force, skipAudit)
 	}
 	// Try exact skill path first (prevents basename collision with nested repos)
-	skillPath := filepath.Join(s.cfg.Source, name)
+	skillPath := filepath.Join(s.cfg.EffectiveSkillsSource(), name)
 	if entry := s.skillsStore.GetByPath(name); entry != nil && entry.Source != "" {
 		return s.updateRegularSkill(name, skillPath, skipAudit)
 	}
@@ -425,19 +425,19 @@ func (s *Server) updateAll(force, skipAudit bool) []updateResultItem {
 	var results []updateResultItem
 
 	// Update tracked repos
-	repos, err := install.GetTrackedRepos(s.cfg.Source)
+	repos, err := install.GetTrackedRepos(s.cfg.EffectiveSkillsSource())
 	if err == nil {
 		for _, repo := range repos {
-			repoPath := filepath.Join(s.cfg.Source, repo)
+			repoPath := filepath.Join(s.cfg.EffectiveSkillsSource(), repo)
 			results = append(results, s.updateTrackedRepo(repo, repoPath, force, skipAudit))
 		}
 	}
 
 	// Update regular skills with source metadata
-	skills, err := getServerUpdatableSkills(s.cfg.Source, s.skillsStore)
+	skills, err := getServerUpdatableSkills(s.cfg.EffectiveSkillsSource(), s.skillsStore)
 	if err == nil {
 		for _, skill := range skills {
-			skillPath := filepath.Join(s.cfg.Source, skill)
+			skillPath := filepath.Join(s.cfg.EffectiveSkillsSource(), skill)
 			results = append(results, s.updateRegularSkill(skill, skillPath, skipAudit))
 		}
 	}

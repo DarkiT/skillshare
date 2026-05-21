@@ -339,7 +339,7 @@ func targetRemove(args []string) error {
 	ui.Header("Unlinking targets")
 	for _, targetName := range toRemove {
 		target := cfg.Targets[targetName]
-		if err := unlinkTarget(targetName, target, cfg.Source); err != nil {
+		if err := unlinkTarget(targetName, target, cfg.EffectiveSkillsSource()); err != nil {
 			ui.Error("%s: %v", targetName, err)
 			continue
 		}
@@ -702,10 +702,10 @@ func showTargetInfo(cfg *config.Config, name string, target config.TargetConfig)
 		status, managed, local := sync.CheckStatusCopy(sc.Path)
 		statusLine = fmt.Sprintf("%s (managed: %d, local: %d)", status, managed, local)
 	case "merge":
-		status, linked, local := sync.CheckStatusMerge(sc.Path, cfg.Source)
+		status, linked, local := sync.CheckStatusMerge(sc.Path, cfg.EffectiveSkillsSource())
 		statusLine = fmt.Sprintf("%s (linked: %d, local: %d)", status, linked, local)
 	default:
-		statusLine = sync.CheckStatus(sc.Path, cfg.Source).String()
+		statusLine = sync.CheckStatus(sc.Path, cfg.EffectiveSkillsSource()).String()
 	}
 
 	namingDisplay := config.EffectiveTargetNaming(sc.TargetNaming)
