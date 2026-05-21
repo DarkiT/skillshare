@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"maps"
 	"net/http"
 	"os"
@@ -73,6 +74,10 @@ func (s *Server) handleSync(w http.ResponseWriter, r *http.Request) {
 	if validErr != nil {
 		writeError(w, http.StatusBadRequest, validErr.Error())
 		return
+	}
+
+	if involved := config.DetectPathOverlap(s.cfg.Targets, s.IsProjectMode()); len(involved) > 0 {
+		warnings = append(warnings, fmt.Sprintf("Skill path overlap across %d target(s) — see Health Check for details", len(involved)))
 	}
 
 	results := make([]syncTargetResult, 0)

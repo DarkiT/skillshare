@@ -124,6 +124,9 @@ func cmdSyncProject(root string, dryRun, force, jsonOutput, quiet bool) (syncLog
 
 		// Show ignored skills from .skillignore
 		printIgnoredSkills(ignoreStats)
+
+		// One-liner path-overlap hint — points users at `doctor` for details.
+		printSyncOverlapHint(runtime.targets, true, jsonOutput)
 	}
 
 	// Compute context cost once — used by both text summary and JSON output

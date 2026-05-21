@@ -257,6 +257,9 @@ func cmdSync(args []string) error {
 		// Show ignored skills from .skillignore
 		printIgnoredSkills(ignoreStats)
 
+		// One-liner path-overlap hint — points users at `doctor` for details.
+		printSyncOverlapHint(cfg.Targets, false, jsonOutput)
+
 		// Opportunistic cleanup of expired trash items
 		if !dryRun {
 			if n, _ := trash.Cleanup(trash.TrashDir(), 0); n > 0 {
