@@ -9,6 +9,14 @@ All notable changes to skillshare are documented here. For the full commit histo
 
 ---
 
+## [0.19.21] - 2026-05-24
+
+### Bug Fixes
+
+- **Update page checks now finish for nested GitHub-installed skills** — the dashboard now matches check results by relative path as well as display name, so items such as `tools/agent-browser` no longer stay stuck on `Checking` after **Check All** completes
+- **Update Selected now targets nested GitHub-installed skills correctly** — selecting an item installed under a subdirectory now sends its relative path (for example `tools/agent-browser`) to the update endpoint instead of the flattened display name
+- **Remote update checks no longer wait indefinitely on Git prompts** — lightweight `git ls-remote` probes now disable interactive credential prompts and time out after 15 seconds, surfacing an error in the UI/CLI instead of leaving the update check spinner running forever
+
 ## [0.19.20] - 2026-05-24
 
 ### New Features

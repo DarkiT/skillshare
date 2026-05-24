@@ -4,7 +4,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 )
 
 func TestGetRemoteRefHash(t *testing.T) {
@@ -58,6 +60,58 @@ func TestGetRemoteRefHash(t *testing.T) {
 			t.Error("expected error for nonexistent branch")
 		}
 	})
+}
+
+func TestGetRemoteHeadHashWithEnv_DisablesPrompts(t *testing.T) {
+	binDir := t.TempDir()
+	gitPath := filepath.Join(binDir, "git")
+	script := `#!/bin/sh
+if [ "$1" != "ls-remote" ]; then
+  echo "unexpected command" >&2
+  exit 2
+fi
+if [ "$GIT_TERMINAL_PROMPT" != "0" ] || [ -n "$GIT_ASKPASS" ] || [ -n "$SSH_ASKPASS" ]; then
+  echo "interactive prompts were not disabled" >&2
+  exit 2
+fi
+printf 'abcdef1234567890\tHEAD\n'
+`
+	if err := os.WriteFile(gitPath, []byte(script), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	hash, err := GetRemoteHeadHashWithEnv("https://example.com/repo.git", nil)
+	if err != nil {
+		t.Fatalf("GetRemoteHeadHashWithEnv: %v", err)
+	}
+	if hash != "abcdef1" {
+		t.Fatalf("hash = %q, want abcdef1", hash)
+	}
+}
+
+func TestGetRemoteHeadHashWithEnv_TimesOut(t *testing.T) {
+	oldTimeout := remoteHashTimeout
+	remoteHashTimeout = 10 * time.Millisecond
+	t.Cleanup(func() { remoteHashTimeout = oldTimeout })
+
+	binDir := t.TempDir()
+	gitPath := filepath.Join(binDir, "git")
+	script := `#!/bin/sh
+sleep 2
+`
+	if err := os.WriteFile(gitPath, []byte(script), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	_, err := GetRemoteHeadHashWithEnv("https://example.com/repo.git", nil)
+	if err == nil {
+		t.Fatal("expected timeout error")
+	}
+	if !strings.Contains(err.Error(), "timed out") {
+		t.Fatalf("error = %q, want timeout", err.Error())
+	}
 }
 
 // run executes a command and fails the test on error.

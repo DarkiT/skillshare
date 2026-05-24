@@ -163,34 +163,49 @@ export default function UpdatePage() {
   const applyCheckResult = useCallback((result: CheckResult, filterNames?: Set<string>) => {
     setCheckStatuses((prev) => {
       const next = new Map(prev);
+      const pending = new Set(filterNames ?? allUpdatableItems.map((item) => item.name));
 
       // Tracked repos: propagate the repo's status to every item belonging to it.
       // The backend returns one entry per repo directory (e.g. `_awesome-claude-agents`)
       // but the UI uses per-item keys (`api-architect`, `backend-developer`, ...).
       for (const repo of result.tracked_repos) {
-        const repoStatus: CheckItemStatus = {
-          status: repo.status === 'behind' ? 'behind' : 'up-to-date',
-          message: repo.message,
-          behind: repo.behind,
-        };
+        const repoStatus: CheckItemStatus = repo.status === 'behind'
+          ? { status: 'behind', message: repo.message, behind: repo.behind }
+          : repo.status === 'error' || repo.status === 'dirty'
+          ? { status: 'error', message: repo.message }
+          : { status: 'up-to-date', message: repo.message };
         for (const item of allUpdatableItems) {
           if (!item.isInRepo) continue;
           if (item.relPath.split('/')[0] !== repo.name) continue;
           if (filterNames && !filterNames.has(item.name)) continue;
           next.set(item.name, repoStatus);
+          pending.delete(item.name);
         }
       }
 
-      // Individual non-repo skills (GitHub-installed)
+      // Individual non-repo skills (GitHub-installed). Backend check results use
+      // metadata relative paths for nested installs, while the list displays the
+      // basename; match all stable identifiers so nested items don't stay checking.
       for (const skill of result.skills) {
         const item = allUpdatableItems.find(
-          (i) => !i.isInRepo && (i.name === skill.name || i.flatName === skill.name),
+          (i) => !i.isInRepo && matchesCheckSkill(i, skill.name),
         );
         if (!item) continue;
         if (filterNames && !filterNames.has(item.name)) continue;
         next.set(item.name, {
-          status: skill.status === 'update_available' ? 'update-available' : 'up-to-date',
+          status: skill.status === 'update_available'
+            ? 'update-available'
+            : skill.status === 'error'
+            ? 'error'
+            : 'up-to-date',
         });
+        pending.delete(item.name);
+      }
+
+      for (const name of pending) {
+        if (next.get(name)?.status === 'checking') {
+          next.set(name, { status: 'error' });
+        }
       }
 
       return next;
@@ -293,7 +308,11 @@ export default function UpdatePage() {
   const toggleSelect = useCallback((name: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(name) ? next.delete(name) : next.add(name);
+      if (next.has(name)) {
+        next.delete(name);
+      } else {
+        next.add(name);
+      }
       return next;
     });
   }, []);
@@ -343,8 +362,8 @@ export default function UpdatePage() {
         names.push(repoDir);
         items.push({ name: repoDir, kind: item.kind, isRepo: true, status: 'pending' });
       } else {
-        names.push(item.flatName);
-        items.push({ name: item.flatName, kind: item.kind, isRepo: false, status: 'pending' });
+        names.push(item.relPath);
+        items.push({ name: item.relPath, kind: item.kind, isRepo: false, status: 'pending' });
       }
     }
 
@@ -878,6 +897,10 @@ function formatRelativeTime(dateStr: string): string {
 function isStaleError(message?: string): boolean {
   if (!message) return false;
   return message.includes('does not exist in repository') || message.includes('not found in repository');
+}
+
+function matchesCheckSkill(item: UpdatableItem, resultName: string): boolean {
+  return item.name === resultName || item.flatName === resultName || item.relPath === resultName;
 }
 
 function actionToStatus(action: string): ItemUpdateStatus['status'] {
