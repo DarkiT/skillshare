@@ -58,7 +58,7 @@ func downloadGiteaDir(owner, repo, path, destDir string, source *Source, onProgr
 	if err != nil {
 		return "", nil
 	}
-	return shortCommitHash(commitHash), nil
+	return shortHash(commitHash), nil
 }
 
 // giteaAPIBase returns the base API URL for a Gitea instance.
@@ -262,9 +262,9 @@ func giteaOwnerRepo(cloneURL string) (owner, repo string) {
 
 	// SSH: git@host:owner/repo
 	if strings.HasPrefix(u, "git@") {
-		parts := strings.Split(u, ":")
-		if len(parts) == 2 {
-			segments := strings.Split(parts[1], "/")
+		colon := strings.LastIndex(u, ":")
+		if colon != -1 {
+			segments := strings.Split(strings.Trim(u[colon+1:], "/"), "/")
 			if len(segments) >= 2 {
 				return segments[0], segments[1]
 			}

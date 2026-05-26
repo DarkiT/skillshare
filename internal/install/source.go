@@ -474,6 +474,34 @@ func isGiteaHost(host string, extraHosts []string) bool {
 	return strings.Contains(host, "gitea") || hostMatchesAny(host, extraHosts)
 }
 
+// detectPlatformFromHost returns the platform for a given hostname, using
+// configured extra hosts for CNB and Gitea self-hosted instances.
+func detectPlatformFromHost(host string, cnbHosts, giteaHosts []string) Platform {
+	host = strings.ToLower(host)
+	if host == "" {
+		return PlatformUnknown
+	}
+	if strings.Contains(host, "github") {
+		return PlatformGitHub
+	}
+	if strings.Contains(host, "gitlab") {
+		return PlatformGitLab
+	}
+	if strings.Contains(host, "bitbucket") {
+		return PlatformBitbucket
+	}
+	if host == "dev.azure.com" || host == "ssh.dev.azure.com" || strings.HasSuffix(host, ".visualstudio.com") {
+		return PlatformAzureDevOps
+	}
+	if isCNBHost(host, cnbHosts) {
+		return PlatformCNB
+	}
+	if isGiteaHost(host, giteaHosts) {
+		return PlatformGitea
+	}
+	return PlatformUnknown
+}
+
 // stripGitBranchPrefix removes platform-specific branch path segments from web URLs.
 // Bitbucket: src/{branch}/path → path
 // GitLab:    -/tree/{branch}/path → path, -/blob/{branch}/path → path

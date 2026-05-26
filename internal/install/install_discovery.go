@@ -409,6 +409,7 @@ func discoverFromGitSubdirWithProgressImpl(source *Source, onProgress ProgressCa
 				Agents:     agents,
 				Source:     source,
 				CommitHash: commitHash,
+				Warnings:   warnings,
 			}, nil
 		}
 		warnings = append(warnings, fmt.Sprintf("Gitea API discovery fallback: %v", dlErr))
